@@ -1,0 +1,6 @@
+[submodule "source-snapshots/cloud-gsa-prototype"]
+	path = source-snapshots/cloud-gsa-prototype
+	url = https://github.com/RandoSY/cloud-gsa-prototype.git
+[submodule "source-snapshots/dexis-lab"]
+	path = source-snapshots/dexis-lab
+	url = https://github.com/RandoSY/DEXIS-Lab.git
