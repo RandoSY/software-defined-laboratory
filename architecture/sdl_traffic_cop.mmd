@@ -1,0 +1,33 @@
+flowchart LR
+
+    CODEX["Codex / AI<br/>Plans experiments<br/>Writes commands"]
+
+    COP["SDL TRAFFIC COP<br/>Python MCP Gateway<br/>Command + Control"]
+
+    DASH["Browser Dashboard<br/>Monitor • Log • Admin"]
+
+    NET["TCP/IP<br/>Human-readable ASCII"]
+
+    PICO["SUPER / Pico W<br/>CircuitPython"]
+
+    SENSOR["Experiment Hardware<br/>DS18B20 • HX711 • IMU<br/>ADC • GPIO • I²C"]
+
+    DATA["Experimental Data<br/>Time • Temperature<br/>Mass • Motion"]
+
+    CODEX -->|"MCP request"| COP
+    DASH <-->|"WebSocket / HTTP"| COP
+
+    COP -->|"CMD: TEMP READ"| NET
+    NET --> PICO
+
+    PICO --> SENSOR
+    SENSOR --> PICO
+
+    PICO -->|"RSP: TEMP 22.84 C"| NET
+    NET --> COP
+
+    COP -->|"Structured result"| CODEX
+    COP -->|"Live traffic"| DASH
+
+    COP --> DATA
+    DATA --> CODEX
