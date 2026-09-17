@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import isfinite
 
 
 @dataclass(frozen=True)
@@ -13,8 +14,8 @@ class TemperatureSample:
 def parse_temperature_line(line: str) -> TemperatureSample | None:
     """Parse TEMP_C,<value>; return None for non-measurement lines.
 
-    Raises ValueError for a TEMP_C line whose numeric value is malformed
-    or outside the physical DS18B20 operating range.
+    Raises ValueError for a TEMP_C line whose numeric value is malformed,
+    non-finite, or outside the physical DS18B20 operating range.
     """
     text = line.strip()
     if not text:
@@ -31,6 +32,8 @@ def parse_temperature_line(line: str) -> TemperatureSample | None:
     except ValueError as exc:
         raise ValueError(f"non-numeric TEMP_C value: {text!r}") from exc
 
+    if not isfinite(value):
+        raise ValueError(f"non-finite TEMP_C value: {text!r}")
     if not -55.0 <= value <= 125.0:
         raise ValueError(f"TEMP_C outside DS18B20 range: {value}")
 
