@@ -4,50 +4,56 @@
 
 **Current status:** `USABLE BUT INCOMPLETE`
 
-The repository contains a coherent canonical description of SDL, preserved architecture material, and pinned historical source snapshots. It does **not yet** contain a fully reproduced, outsider-verifiable end-to-end release built from the repository alone.
+The repository now contains a coherent canonical SDL description, repository-local source for the first acceptance path, a host-side software preflight, automated host tests, an automated Uno compile check, and a formal physical validation record.
+
+It is **not yet marked `READY`** because the complete physical DS18B20 -> Uno -> USB -> Python -> CSV -> graph path has not been re-run from a clean checkout and recorded by a human tester.
 
 ## Readiness vocabulary
 
-The Intellectual Estate uses three repository-readiness states:
-
 ### READY
-A new reader can understand the project, obtain the required hardware/software, follow one documented path, and reproduce at least one meaningful result from the repository. Current source is clearly separated from historical material. Tested configurations and limitations are stated.
+
+A new reader can understand the project, obtain the required hardware/software, follow one documented path, and reproduce at least one meaningful physical result from the repository. Current source is clearly separated from historical material. Tested configurations and limitations are stated.
 
 ### USABLE BUT INCOMPLETE
-The project is intelligible and contains useful material, but at least one critical reproducibility element is missing or has not been re-verified: source, installation steps, hardware details, test evidence, or a complete runnable example.
+
+The project is intelligible and useful, but at least one critical reproducibility condition has not yet been physically verified.
 
 ### ARCHIVAL
+
 The repository preserves historically or intellectually valuable material but does not claim to provide a current reproducible implementation.
 
 ## SDL acceptance target
 
 SDL becomes `READY` when an outsider can reproduce this minimum path:
 
-1. Inexpensive physical endpoint.
-2. Real sensor measurement.
-3. Human-readable transport to a host.
-4. Host software receives and records the measurement.
-5. The measurement is observable in a simple display or graph.
-6. The same path is documented from hardware connection through result.
-7. The procedure has been re-run from a clean checkout and the tested date/configuration recorded.
+1. DS18B20 makes a real temperature measurement.
+2. Arduino Uno-class endpoint emits a human-readable record.
+3. USB serial carries the record to the host.
+4. Repository-local Python receives and records it.
+5. The CSV is plotted.
+6. The run begins from a clean checkout.
+7. The exact tested configuration and commit are recorded.
 
-The preferred first acceptance experiment is a DS18B20 temperature measurement using the low-cost Arduino Uno / Multi-Function Shield tier and USB serial host transport.
-
-## What is present now
+## Present now
 
 - Canonical SDL scope and design rules in `README.md`.
-- Preserved architecture documents in `architecture/`.
-- Historical lineage and archive material.
-- Pinned source snapshots in `source-snapshots/`.
-- A preserved checksum record in `evidence/`.
+- Windows-friendly first path in `docs/QUICKSTART.md`.
+- Arduino Uno + DS18B20 endpoint in `endpoints/uno_ds18b20/`.
+- Human-readable `TEMP_C,<value>` protocol.
+- Python host logger in `bridge/serial_logger.py`.
+- CSV plotter in `bridge/plot_csv.py`.
+- Hardware-independent serial fixture in `validation/fixtures/`.
+- Unit tests in `tests/`.
+- GitHub Actions checks for host software and Arduino Uno compilation.
+- Physical acceptance procedure and record in `validation/FIRST_ACCEPTANCE_VALIDATION.md`.
+- Preserved architecture, lineage, source snapshots, archive, and evidence material.
 
-## What is still required
+## Remaining gate
 
-- A repository-local endpoint implementation for the minimum acceptance path.
-- A repository-local host bridge for that path.
-- A complete wiring/setup guide.
-- A known-good sample data file.
-- A repeatable acceptance test.
-- A dated validation record showing the path was actually reproduced.
+One gate remains before promotion to `READY`:
 
-Until those items are complete, this file is the authoritative statement of readiness.
+> Run the documented physical acceptance path on real hardware from a clean checkout and complete `validation/FIRST_ACCEPTANCE_VALIDATION.md`.
+
+Automated tests and compilation are evidence that the repository is internally coherent. They are **not** a substitute for observing a real sensor through the complete path.
+
+Until that physical gate is passed, this file is the authoritative readiness statement.
