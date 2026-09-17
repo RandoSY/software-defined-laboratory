@@ -1,0 +1,60 @@
+name: SDL reference checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  host-software:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install host dependencies
+        run: python -m pip install -r bridge/requirements.txt
+
+      - name: Run unit tests
+        env:
+          PYTHONPATH: bridge
+        run: python -m unittest discover -s tests -v
+
+      - name: Run fixture through logger
+        run: |
+          python bridge/serial_logger.py \
+            --input-file validation/fixtures/serial_sample.txt \
+            --output validation/ci_sample.csv
+
+      - name: Produce headless plot
+        env:
+          MPLBACKEND: Agg
+        run: |
+          python bridge/plot_csv.py \
+            validation/ci_sample.csv \
+            --output validation/ci_plot.png
+
+  uno-firmware:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: arduino/setup-arduino-cli@v2
+
+      - name: Install Arduino AVR core
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install arduino:avr
+
+      - name: Install sketch libraries
+        run: |
+          arduino-cli lib install "OneWire"
+          arduino-cli lib install "DallasTemperature"
+
+      - name: Compile first-acceptance endpoint
+        run: |
+          arduino-cli compile \
+            --fqbn arduino:avr:uno \
+            endpoints/uno_ds18b20
