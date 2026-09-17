@@ -3,18 +3,19 @@
 **SDL is the central laboratory architecture of the Rando Young Intellectual Estate:** a way to connect inexpensive physical experiments to software and AI without requiring expensive laboratory infrastructure.
 
 > **Estate status:** `USABLE BUT INCOMPLETE`  
-> This repository is being reconstructed as the reference standard for the rest of the Intellectual Estate. It contains canonical architecture and preserved historical material, but it does not yet claim a freshly reproduced end-to-end release.
+> The first reference implementation is now repository-local and automatically checked. The remaining readiness gate is a recorded physical end-to-end run on real hardware.
 
-See [ESTATE_STATUS.md](ESTATE_STATUS.md) for the exact readiness definition and remaining work.
+See [ESTATE_STATUS.md](ESTATE_STATUS.md) for the exact readiness definition.
 
 ## Start here
 
-If you are new to SDL, read these in order:
+If you want to run something rather than study the history:
 
-1. **This README** — what SDL is and why it exists.
-2. **[First Acceptance Path](docs/FIRST_ACCEPTANCE_PATH.md)** — the smallest end-to-end implementation that will establish reproducibility.
-3. **[Project History](PROJECT_HISTORY.md)** — how SUPER, historical prototypes, and SDL fit together.
-4. **[Repository Standard](docs/REPOSITORY_STANDARD.md)** — the standard this repository is intended to establish for the wider estate.
+1. **[Quick Start](docs/QUICKSTART.md)** — shortest Windows-friendly route through the first implementation.
+2. **[First Acceptance Path](docs/FIRST_ACCEPTANCE_PATH.md)** — acceptance criteria and rationale.
+3. **[First Acceptance Validation](validation/FIRST_ACCEPTANCE_VALIDATION.md)** — the physical test record that must pass before `READY`.
+4. **[Project History](PROJECT_HISTORY.md)** — how SUPER, historical prototypes, and SDL fit together.
+5. **[Repository Standard](docs/REPOSITORY_STANDARD.md)** — the template this repository establishes for the wider estate.
 
 ## The core pattern
 
@@ -24,29 +25,57 @@ The minimum SDL path is intentionally simple:
 
 A useful SDL can begin with an Arduino Uno, Multi-Function Shield, and one sensor over USB serial. Richer reference systems may use Pico W, ESP32-class hardware, micro:bit, BLE, Wi-Fi, browser interfaces, MCP, and dynamically deployed code.
 
-The advanced capabilities are extensions of the same pattern, not prerequisites for proving it.
+Advanced capabilities are extensions of the same pattern, not prerequisites for proving it.
 
-## First reproducible target
+## First reference implementation
 
-The first outsider-verifiable SDL path is deliberately modest:
+The first outsider-verifiable SDL path is:
 
-**DS18B20 -> Arduino Uno / Multi-Function Shield tier -> USB serial -> Python host bridge -> recorded temperature data -> simple graph**
+**DS18B20 -> Arduino Uno / Multi-Function Shield tier -> USB serial -> Python host bridge -> CSV -> graph**
 
-This path becomes the first acceptance test because every layer is inspectable and inexpensive. It must be reproducible from a clean checkout before this repository is marked `READY`.
+Repository-local implementation:
 
-The detailed acceptance criteria are in [docs/FIRST_ACCEPTANCE_PATH.md](docs/FIRST_ACCEPTANCE_PATH.md).
+- `endpoints/uno_ds18b20/uno_ds18b20.ino` — endpoint firmware.
+- `bridge/protocol.py` — protocol parsing and validation.
+- `bridge/serial_logger.py` — USB serial or fixture input to CSV.
+- `bridge/plot_csv.py` — interactive or PNG graph output.
+- `validation/fixtures/serial_sample.txt` — known-good software fixture.
+- `tests/test_bridge.py` — host protocol/logging tests.
+- `.github/workflows/reference-standard.yml` — automated host checks and Arduino Uno compilation.
+
+Before connecting hardware, the fixture can be passed through the same logger:
+
+```powershell
+python -m pip install -r bridge/requirements.txt
+python bridge/serial_logger.py --input-file validation/fixtures/serial_sample.txt --output validation/software_check.csv
+python bridge/plot_csv.py validation/software_check.csv --output validation/software_check.png
+```
+
+The physical validation procedure is in [docs/QUICKSTART.md](docs/QUICKSTART.md).
+
+## Human-readable protocol
+
+The baseline endpoint intentionally says very little:
+
+```text
+SDL,READY,DS18B20
+TEMP_C,23.625
+ERROR,SENSOR
+```
+
+This is a deliberate design choice. Extra metadata should be added only when it solves an actual need.
 
 ## Canonical components
 
 - **SDL** — the overall laboratory architecture.
 - **SUPER** — a dedicated low-cost laboratory hardware/reference implementation family within SDL.
 - **MCP** — a higher-level interface layer for AI-assisted laboratory work where appropriate.
-- **Endpoint** — performs sensing, actuation, timing, and simple local behavior.
+- **Endpoint** — sensing, actuation, timing, and simple local behavior.
 - **Transport** — USB serial, BLE UART, Wi-Fi/TCP, or another inspectable link.
 - **Host bridge** — connects endpoint messages to host-side software.
 - **Protocols** — short, human-readable messages where practical.
-- **Dashboards** — reusable interfaces for observation and control.
-- **Reference experiments** — bounded physical experiments that prove the architecture end to end.
+- **Dashboards** — reusable observation and control interfaces.
+- **Reference experiments** — bounded physical experiments proving the architecture end to end.
 - **AI collaboration** — interpretation, coding assistance, experiment variation, model checking, and orchestration where it adds value.
 
 UNO/MFS, Pico W, micro:bit, ESP32, and similar boards are endpoint/reference tiers, not competing laboratory architectures.
@@ -66,26 +95,20 @@ UNO/MFS, Pico W, micro:bit, ESP32, and similar boards are endpoint/reference tie
 
 ## Repository map
 
-Current preserved material includes:
-
-- `architecture/` — preserved architecture documents and diagrams.
-- `source-snapshots/` — pinned historical source repositories used as reconstruction evidence.
-- `lineage/` — historical lineage material.
-- `archive/` — material preserved for research or reconstruction rather than presented as current.
-- `evidence/` — preserved integrity/validation artifacts.
-- `docs/` — current reconstruction and acceptance documentation.
-
-As the first acceptance path is rebuilt, current implementation material should live directly in this repository under clear current-source directories such as:
-
 ```text
-endpoints/
-bridge/
-examples/
-validation/
-hardware/        # when applicable
+endpoints/        current endpoint firmware
+bridge/           current host-side bridge and plotting software
+tests/            automated software tests
+validation/       fixtures and physical validation records
+docs/             current operating and estate documentation
+architecture/     preserved architecture documents
+source-snapshots/ pinned historical source repositories
+lineage/          historical lineage material
+archive/          research/reconstruction material
+evidence/         preserved integrity/validation artifacts
 ```
 
-Historical code should not be treated as current merely because it is reachable through a submodule.
+Historical code is not treated as current merely because it is reachable through a source snapshot.
 
 ## Relationship to CORE 10
 
@@ -93,15 +116,7 @@ SDL supplies instrumentation and AI collaboration. CORE 10 supplies bounded educ
 
 ## What “finished” means here
 
-This repository is intended to become the model for the rest of the Intellectual Estate. A major technical repository is not estate-ready merely because files have been copied into GitHub. It should have:
-
-- a clear front door;
-- one reproducible golden path;
-- repository-local source needed for that path;
-- explicit requirements and expected output;
-- dated validation evidence;
-- project history and canonical design decisions;
-- clear separation of current, experimental, and archival material.
+A major technical repository is not estate-ready merely because files were copied into GitHub. It should have a clear front door, one reproducible golden path, repository-local source, explicit requirements, known expected output, dated validation evidence, project history, and a clear separation of current and archival material.
 
 The full standard is in [docs/REPOSITORY_STANDARD.md](docs/REPOSITORY_STANDARD.md).
 
@@ -111,4 +126,4 @@ The full standard is in [docs/REPOSITORY_STANDARD.md](docs/REPOSITORY_STANDARD.m
 **Priority:** P1 finishing work  
 **Estate readiness:** `USABLE BUT INCOMPLETE`
 
-The immediate reconstruction objective is not to recover every historical SDL feature. It is to make one small vertical slice completely reproducible, validate it, and then use this repository as the structural template for the other major repositories in the Intellectual Estate.
+The software and compile-verification infrastructure for the first vertical slice is now present. Promotion to `READY` is intentionally withheld until the documented physical sensor path is run and recorded.
