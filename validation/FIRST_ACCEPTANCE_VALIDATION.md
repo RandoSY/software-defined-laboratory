@@ -1,8 +1,19 @@
 # First Acceptance Validation Record
 
-**Status:** NOT YET VALIDATED
+**Status:** NOT YET PHYSICALLY VALIDATED
 
-This file becomes the dated evidence that the minimum SDL path has actually been reproduced from this repository. Do not change the status to PASS until the hardware path has been run.
+This file is the dated evidence that the minimum SDL path has actually been reproduced from this repository. Automated software and compile checks are useful preflight evidence; they do not replace this physical test.
+
+## Automated preflight
+
+The repository contains automated checks for:
+
+- protocol parsing and malformed-input handling;
+- fixture -> CSV logging;
+- fixture -> headless plot generation;
+- Arduino Uno compilation with OneWire and DallasTemperature.
+
+A green automated run means the code is internally consistent on the CI environment. It does **not** mean a real DS18B20 has been observed.
 
 ## Test identity
 
@@ -16,8 +27,8 @@ This file becomes the dated evidence that the minimum SDL path has actually been
 - Arduino Uno or compatible:
 - Multi-Function Shield (if fitted):
 - DS18B20 sensor:
-- DATA pin used:
-- Pull-up resistor:
+- DATA pin used: D2 unless changed
+- Pull-up resistor: 4.7 kOhm DATA -> 5V
 - USB interface/cable:
 
 ## Firmware environment
@@ -38,21 +49,21 @@ This file becomes the dated evidence that the minimum SDL path has actually been
 ## Procedure
 
 - [ ] Clone or check out the tested commit.
-- [ ] Wire the DS18B20 according to the endpoint source/header documentation.
+- [ ] Complete the fixture preflight in `docs/QUICKSTART.md`.
+- [ ] Wire the DS18B20 according to the endpoint documentation.
 - [ ] Build the endpoint firmware without errors.
 - [ ] Upload the endpoint firmware.
 - [ ] Confirm readable serial output at 115200 baud.
 - [ ] Confirm at least one `TEMP_C,<value>` line.
-- [ ] Install `bridge/requirements.txt` in a clean Python environment.
 - [ ] Run `bridge/serial_logger.py` and create a CSV file.
 - [ ] Confirm CSV contains host UTC timestamps and temperature values.
 - [ ] Run `bridge/plot_csv.py` on the CSV file.
 - [ ] Confirm a temperature-versus-time graph is displayed.
-- [ ] Disconnect or miswire the sensor and confirm `ERROR,SENSOR` behavior, then restore it.
+- [ ] Disconnect or miswire the sensor and confirm `ERROR,SENSOR`, then restore it.
 
 ## Commands used
 
-```text
+```powershell
 python -m pip install -r bridge/requirements.txt
 python bridge/serial_logger.py --port COM3 --seconds 60 --output validation/sample_run.csv
 python bridge/plot_csv.py validation/sample_run.csv
@@ -60,11 +71,26 @@ python bridge/plot_csv.py validation/sample_run.csv
 
 Replace `COM3` with the actual serial port.
 
-## Observed serial sample
+## Expected serial shape
 
 ```text
 SDL,READY,DS18B20
-TEMP_C,
+TEMP_C,23.625
+TEMP_C,23.750
+```
+
+A missing/unreadable sensor should produce:
+
+```text
+ERROR,SENSOR
+```
+
+## Observed serial sample
+
+Paste several real lines here:
+
+```text
+
 ```
 
 ## Observed result
@@ -73,7 +99,7 @@ Describe what happened, including deviations from the documented procedure.
 
 ## Outcome
 
-- [ ] PASS — complete vertical slice reproduced from this repository.
+- [ ] PASS — complete physical vertical slice reproduced from this repository.
 - [ ] FAIL — record the failure below and keep repository readiness unchanged.
 
 ## Problems / deviations
@@ -82,4 +108,4 @@ Record compile errors, library conflicts, wiring corrections, serial-port issues
 
 ## Promotion consequence
 
-After a PASS, add the known-good sample output to `validation/`, update `ESTATE_STATUS.md`, and only then consider promoting the repository from `USABLE BUT INCOMPLETE` to `READY`.
+After a physical PASS, commit the completed record and a short known-good sample output. Only then promote `ESTATE_STATUS.md` from `USABLE BUT INCOMPLETE` to `READY`.
