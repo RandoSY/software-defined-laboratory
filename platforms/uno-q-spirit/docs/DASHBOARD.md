@@ -1,5 +1,7 @@
 # UNO Q Spirit Experiment Dashboard
 
+For operator workflows, architecture, safety notes, and the wider lab roadmap, see the [User's & Programmer's Guide](USER_AND_PROGRAMMERS_GUIDE.pdf).
+
 **Status:** Running on the UNO Q Linux side at `http://192.168.0.165:7000` (UNO Q LAN address `192.168.0.165`, TCP port `7000`).
 
 ## Architecture
