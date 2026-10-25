@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 230" role="img" aria-labelledby="t d">
+<title id="t">UNO Q Spirit</title><desc id="d">Independent embedded laboratory logo with circuit traces, a Q-shaped signal ring, a microchip, a penguin-like symbol, and a four-pointed spark.</desc>
+<defs><linearGradient id="blue" x2="1" y2="1"><stop stop-color="#112657"/><stop offset="1" stop-color="#04bfd8"/></linearGradient></defs>
+<rect width="760" height="230" fill="#fff"/>
+<g transform="translate(92,104)">
+<path d="M-3-67A67 67 0 1 1-52 40" fill="none" stroke="url(#blue)" stroke-width="18" stroke-linecap="round"/>
+<path d="M38 34L87 82" fill="none" stroke="#08488b" stroke-width="18" stroke-linecap="round"/>
+<g fill="none" stroke="#0e99c1" stroke-width="7" stroke-linecap="round"><path d="M-76-20H-115L-137-42"/><path d="M-67 13H-131"/><path d="M-65 42H-105L-126 64"/></g>
+<g fill="#fff" stroke="#0e99c1" stroke-width="6"><circle cx="-137" cy="-42" r="9"/><circle cx="-131" cy="13" r="9"/><circle cx="-126" cy="64" r="9"/></g>
+<rect x="-34" y="-36" width="70" height="75" rx="11" fill="#102758"/>
+<g fill="#0b599e"><rect x="-44" y="-23" width="10" height="8"/><rect x="-44" y="-4" width="10" height="8"/><rect x="36" y="-23" width="10" height="8"/><rect x="36" y="-4" width="10" height="8"/><rect x="-19" y="-46" width="8" height="10"/><rect x="4" y="-46" width="8" height="10"/><rect x="-19" y="39" width="8" height="10"/><rect x="4" y="39" width="8" height="10"/></g>
+<path d="M-18 20Q-21 3-9-10Q-2-23 8-14Q15-8 11 0Q22 15 23 25Q3 32-18 20Z" fill="none" stroke="#32e2dc" stroke-width="5"/><circle cx="6" cy="-10" r="2" fill="#32e2dc"/>
+<path d="M71-95Q75-68 99-64Q76-59 71-36Q66-59 45-64Q66-69 71-95Z" fill="#ffab1c"/>
+</g>
+<text x="230" y="122" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="58" fill="#102758">Uno <tspan fill="#009fca">Q</tspan> Spirit</text>
+<text x="232" y="158" font-family="Arial, Helvetica, sans-serif" font-size="17" letter-spacing="2" fill="#477091">EMBEDDED LABORATORY INSTRUMENTATION</text>
+</svg>
