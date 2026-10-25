@@ -1,6 +1,7 @@
 // UNO Q Spirit v0.1.0: defensive mixed-sensor lab demonstrator.
 // Target Arduino UNO Q STM32U585 (Arduino's Zephyr core); start SYNTHETIC.
-// Logical pins sourced from historical Nugget 2-Wire Sensor Shield v0.2x.
+// D2-D9 from historical Nugget 2-Wire Sensor Shield v0.2x.
+// UNO Q Wire uses D20=SDA/D21=SCL, unlike historical A4/A5 I2C.
 // DO NOT MATE A 5V AVR SPIRIT PCB TO UNO Q without electrical adaptation.
 #include <Arduino.h>
 #include <Wire.h>
@@ -20,6 +21,7 @@ constexpr uint32_t ECHO_TIMEOUT_US=30000;
 OneWire oneWire(PIN_DS18);
 Adafruit_AS7343 as7343;
 bool live=false, acquiring=true, spectrumFound=false, dsFound=false;
+bool prototypeProfile=false; // Live: DS18B20 + AS7343 only; other acquisition disabled.
 volatile bool bridgeOk=false;
 bool temperatureRequested=false, haveTemperature=false;
 uint8_t dsAddr[8]={0};
@@ -93,7 +95,8 @@ void setMode(bool enabled) {
   digitalWrite(PIN_BUZZER,LOW);
   if (live) {
     dsFound=false; spectrumFound=false;
-    tempState=hxState=usState=specState="WARMUP";
+    tempState=specState="WARMUP";
+    hxState=usState=prototypeProfile?"DISABLED":"WARMUP";
     lastRetry=millis()-DEVICE_RETRY_MS;
     // All device probes and missing sensor handling remain bounded except
     // upstream I2C driver timeout; Wire.setWireTimeout is core dependent.
@@ -201,6 +204,7 @@ String statusJSON() {
   String s="{\"schema\":1,\"mode\":"+quote(live?"live":"synthetic")+
     ",\"run\":"+String(acquiring?"true":"false")+
     ",\"uptime_ms\":"+String(millis()-uptimeStart)+
+    ",\"profile\":"+quote(prototypeProfile?"prototype":"all")+
     ",\"interval_ms\":"+String(systemIntervalMs)+
     ",\"bridge_ok\":"+String(bridgeOk?"true":"false")+
     ",\"temp_c\":"+sensorJSON(tempState,tempC,successTemp,errorTemp)+
@@ -224,9 +228,14 @@ String statusJSON() {
 
 String command(String cmd) {
   cmd.trim();
-  if(cmd=="help")return "{\"ok\":true,\"commands\":[\"mode synthetic\",\"mode live\",\"start\",\"stop\",\"tare\",\"gain 0..12\",\"interval 100..10000\",\"reset-stats\",\"cal grams <known mass>\"]}";
+  if(cmd=="help")return "{\"ok\":true,\"commands\":[\"mode synthetic\",\"mode live\",\"profile prototype\",\"profile all\",\"start\",\"stop\",\"tare\",\"gain 0..12\",\"interval 100..10000\",\"reset-stats\",\"cal grams <known mass>\"]}";
   if(cmd=="mode synthetic") {setMode(false);return "{\"ok\":true,\"mode\":\"synthetic\"}";}
   if(cmd=="mode live") {setMode(true);return "{\"ok\":true,\"mode\":\"live\"}";}
+  if(cmd=="profile prototype" || cmd=="profile all") {
+    prototypeProfile=(cmd=="profile prototype");
+    setMode(live); // clear stale data on configuration change
+    return prototypeProfile?"{\"ok\":true,\"profile\":\"prototype\"}":"{\"ok\":true,\"profile\":\"all\"}";
+  }
   if(cmd=="start") {acquiring=true;return "{\"ok\":true}";}
   if(cmd=="stop") {acquiring=false;digitalWrite(PIN_BUZZER,LOW);return "{\"ok\":true}";}
   if(cmd=="reset-stats") {resetStreams();return "{\"ok\":true}";}
@@ -286,7 +295,7 @@ void setup() {
   pinMode(PIN_TRIG,OUTPUT);digitalWrite(PIN_TRIG,LOW);
   pinMode(PIN_ECHO,INPUT);
   pinMode(PIN_HX_SCK,OUTPUT);digitalWrite(PIN_HX_SCK,LOW);
-  pinMode(PIN_HX_DOUT,INPUT);
+  pinMode(PIN_HX_DOUT,INPUT_PULLUP); // no floating DOUT with disconnected HX711
   pinMode(PIN_START,INPUT_PULLUP);pinMode(PIN_TARE,INPUT_PULLUP);
   pinMode(PIN_BUZZER,OUTPUT);digitalWrite(PIN_BUZZER,LOW);
   Wire.begin();
@@ -310,8 +319,8 @@ void loop() {
       if(now-lastHeartbeat>=systemIntervalMs) {lastHeartbeat=now;synthTick(now);}
     } else {
       if(now-lastRetry>=DEVICE_RETRY_MS) {lastRetry=now;if(!dsFound||!spectrumFound)probeDevices();}
-      if(now-lastHX>=HX_READY_PERIOD_MS){lastHX=now;updateHX(now);}
-      if(now-lastUS>=US_PERIOD_MS){lastUS=now;updateUS();}
+      if(!prototypeProfile && now-lastHX>=HX_READY_PERIOD_MS){lastHX=now;updateHX(now);}
+      if(!prototypeProfile && now-lastUS>=US_PERIOD_MS){lastUS=now;updateUS();}
       finishTemperature(now);
       if(!temperatureRequested && now-lastTemp>=TEMP_PERIOD_MS){lastTemp=now;beginTemperature(now);}
       if(now-lastSpec>=SPEC_PERIOD_MS){lastSpec=now;updateSpectral();}
