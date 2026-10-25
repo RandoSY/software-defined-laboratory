@@ -6,7 +6,7 @@
 
 There is **no need to design or manufacture a new Spirit board first**. Start with an empty UNO-style prototype shield (or a solderless breadboard and leads), the **DS18B20 three-wire thermometer**, and the **Adafruit AS7343 multispectral breakout #6477**. Leave HX711, ultrasonic, START/TARE switches and active buzzer disconnected.
 
-The firmware boots in **synthetic mode**. The new interactive Bridge command `profile prototype` keeps **only DS18B20 and AS7343 acquisition active in live mode**. It reports `DISABLED` for HX711 and ultrasonic instead of polling absent hardware. The `profile all` command restores acquisition on all four sensor families.
+The firmware boots in **synthetic mode**. The Bridge command `profile prototype` (direct Python command or interactive shell) keeps **only DS18B20 and AS7343 acquisition active in live mode**. It reports `DISABLED` for HX711 and ultrasonic instead of polling absent hardware. The `profile all` command restores acquisition on all four sensor families.
 
 ## Critical correction to the old AVR Spirit I²C assumptions
 
