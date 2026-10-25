@@ -1,4 +1,6 @@
 #pragma once
+// Small deterministic subset of Arduino's API for host-only logic checks.
+// Keep this intentionally incomplete so it cannot be mistaken for board proof.
 #include <cstdint>
 #include <cmath>
 #include <cstring>
