@@ -1,3 +1,5 @@
+// Browser controller: the server supplies MCU snapshots and the archive;
+// this file formats responses and posts only experiment start/stop requests.
 const $ = (selector) => document.querySelector(selector);
 const historyPoints = [];
 let state = null;
@@ -108,6 +110,8 @@ function drawChart() {
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
   const now = Date.now();
+  // Show the last five minutes and omit missing/faulted readings instead of
+  // drawing them as genuine zero-degree measurements.
   const points = historyPoints.filter(p => p.time > now - 300000 && Number.isFinite(Number(p.value)) && ['OK', 'SYNTH'].includes(p.state));
   $('#chart-empty').textContent = points.length ? 'Collecting temperature points…' : 'Waiting for telemetry…';
   $('#chart-empty').classList.toggle('hidden', points.length >= 2);
@@ -184,6 +188,7 @@ async function refreshState() {
   }
 }
 async function refreshRuns() {
+  // Run names are untrusted input; construct their table cells with textContent.
   try {
     const response = await fetch('/api/runs', {cache: 'no-store'});
     const data = await response.json();
@@ -269,6 +274,8 @@ $('#refresh-runs').addEventListener('click', async () => {
 });
 
 const tabButtons = [...document.querySelectorAll('[role="tab"]')];
+// Follow the ARIA tabs keyboard model: one tab stop plus arrow/Home/End
+// navigation, with panel visibility tied to the selected tab.
 function activateTab(tabId, moveFocus = false) {
   for (const tab of tabButtons) {
     const selected = tab.id === tabId;
@@ -305,6 +312,7 @@ setInterval(refreshState, 1500);
 setInterval(() => { if (state?.recording) refreshRuns(); }, 5000);
 
 const fontSizeSelect = $('#font-size-select');
+// Scale authored CSS type only; saved preference is local to this browser.
 function setFontSize(size) {
   const allowed = ['normal', 'large', 'largest'];
   const selected = allowed.includes(size) ? size : 'normal';
