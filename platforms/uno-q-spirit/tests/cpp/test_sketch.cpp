@@ -2,6 +2,8 @@
 #include <iostream>
 #include "../../UNO_Q_Spirit/UNO_Q_Spirit.ino"
 int main(){
+  // The stubs provide deterministic host behavior; these assertions do not
+  // replace a build/run on the STM32 or electrical sensor qualification.
   setup();
   assert(!live && bridgeOk);
   assert(statusJSON().str().find("\"mode\":\"synthetic\"")!=std::string::npos);
