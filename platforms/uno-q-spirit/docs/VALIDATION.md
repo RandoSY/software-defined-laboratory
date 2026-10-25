@@ -127,3 +127,7 @@ The dashboard uses plain HTTP without authentication and is intended for the tru
 **Visual refinement:** Switched dashboard surfaces to navy/slate with higher-contrast cyan, teal, lavender, mint and warm pastel sensor accents while retaining the project logo. Verified the updated HTML and stylesheet return HTTP 200 at `192.168.0.165:7000`.
 
 **Tabbed organization and control feedback:** Added accessible Monitor, Experiments, and Archive tabs with active-run indicators, operator messages, run progress, save confirmation, and CSV access. A Chromium-driven interaction check against an isolated temporary database verified tab switching, start feedback/badge, stop/save feedback, archive listing, and CSV download with the HX711 calibration column. The temporary test data is under `/tmp/uno-q-spirit-dashboard-ui-test`, not the permanent experiment archive. The active dashboard remains available on port 7000.
+
+**Readable text sizing:** Added a header selector for Default, Larger (110%), and Largest (120%) dashboard text. The selected size is stored in browser local storage. Checked the active dashboard on `192.168.0.165:7000`; health reports `bridge_ok=true`, and the live HTML/CSS include the selector and scaling styles.
+
+**GitHub publication:** Published the dashboard server, branded assets, text-size selector, tabbed controls, and supporting README/build/validation documentation to branch `codex/uno-q-spirit-dashboard` in `RandoSY/software-defined-laboratory` under `platforms/uno-q-spirit/`.
