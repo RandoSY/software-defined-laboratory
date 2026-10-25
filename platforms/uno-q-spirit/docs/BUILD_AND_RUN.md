@@ -1,5 +1,7 @@
 # Install, run and command the UNO Q Spirit firmware
 
+**First hardware test:** Use the [two-sensor prototype shield](PROTOTYPE_SHIELD_QUICKSTART.md), with DS18B20 D2 and AS7343 `Wire` **D20/D21**. In the CLI shell enter `profile prototype` before `mode live` to suppress HX711 and ultrasonic polling.
+
 ## 1. Build on Arduino IDE
 
 - In Arduino IDE 2.x install/update **Arduino UNO Q Boards**. Select **Arduino UNO Q** (MCU sketch target).
@@ -38,6 +40,7 @@ spirit> gain 6
 spirit> interval 1000
 spirit> stop
 spirit> start
+spirit> profile prototype
 spirit> mode live
 spirit> tare
 spirit> cal grams 100
