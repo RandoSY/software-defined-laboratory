@@ -54,6 +54,7 @@ class MockBridge:
         self.index = 0
         self.gain = 6
         self.interval = 1000
+        self.profile = "all"
 
     def __enter__(self) -> "MockBridge": return self
     def __exit__(self, *_: object) -> None: pass
@@ -71,6 +72,8 @@ class MockBridge:
                 except (ValueError,AssertionError):
                     return json.dumps({"ok": False, "error": "calibration_precondition"})
                 if self.mode != "live": return json.dumps({"ok": False, "error": "calibration_precondition"})
+            elif cmd in ("profile prototype", "profile all"):
+                self.profile = cmd.split()[-1]
             elif cmd == "tare" or cmd == "reset-stats":
                 pass
             elif cmd.startswith("gain "):
@@ -93,14 +96,16 @@ class MockBridge:
         self.index += 1
         t = self.index * 0.15
         state = "SYNTH" if self.mode == "synthetic" else "MISSING"
-        def sensor(val: float | None) -> dict:
-            return {"state": state, "value": val, "ok_count": self.index if self.mode == "synthetic" else 0, "error_count": 0}
-        return json.dumps({"schema": 1, "mode": self.mode, "run": self.running,
+        def sensor(val: float | None, enabled: bool = True) -> dict:
+            sensor_state = state if enabled or self.mode == "synthetic" else "DISABLED"
+            return {"state": sensor_state, "value": val if sensor_state == "SYNTH" else None,
+                    "ok_count": self.index if sensor_state == "SYNTH" else 0, "error_count": 0}
+        return json.dumps({"schema": 1, "mode": self.mode, "profile": self.profile, "run": self.running,
             "uptime_ms": int(t * 1000), "interval_ms": self.interval, "bridge_ok": True,
             "temp_c": sensor(round(22 + 2 * math.sin(t), 3) if self.mode == "synthetic" else None),
-            "hx711_counts": sensor(82500 + int(100 * math.sin(t)) if self.mode == "synthetic" else None),
+            "hx711_counts": sensor(82500 + int(100 * math.sin(t)) if self.mode == "synthetic" else None, self.profile != "prototype"),
             "hx711_grams": None, "hx711_calibrated": False,
-            "distance_cm": sensor(round(50 + 10 * math.sin(t), 3) if self.mode == "synthetic" else None),
+            "distance_cm": sensor(round(50 + 10 * math.sin(t), 3) if self.mode == "synthetic" else None, self.profile != "prototype"),
             "spectral": {"state": state, "gain_code": self.gain,
                 "ok_count": self.index if self.mode == "synthetic" else 0, "error_count": 0,
                 "channels": [round(1200 + j * 210 + 150 * math.sin(t + j / 6)) if self.mode == "synthetic" else 0 for j in range(18)]},
