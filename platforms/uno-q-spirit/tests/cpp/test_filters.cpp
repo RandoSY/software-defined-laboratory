@@ -4,6 +4,8 @@
 #include <iostream>
 #include "../../UNO_Q_Spirit/filters.h"
 int main(){
+  // Edge values matter here: the sketch converts two's-complement 24-bit HX711
+  // samples and must reject impossible distance/temperature inputs as NaN.
   assert(spirit::signed24(0)==0);
   assert(spirit::signed24(0x7fffff)==8388607);
   assert(spirit::signed24(0x800000)==-8388608);
@@ -20,6 +22,7 @@ int main(){
   assert(!spirit::validInterval(99));
   assert(!spirit::validInterval(10001));
   spirit::RunningStat stats;
+  // Online sample variance is reviewed against a small hand-checkable series.
   assert(!stats.add(NAN));
   assert(stats.add(2)); assert(stats.add(4)); assert(stats.add(6));
   assert(stats.n==3 && stats.mean==4);
