@@ -139,3 +139,7 @@ Added `examples/as7343-qwiic-test/`: a sensor-only sketch that probes the UNO Q'
 `arduino-cli compile --fqbn arduino:zephyr:unoq --build-path /tmp/uno_q_as7343_qwiic_test_build examples/as7343-qwiic-test` **PASSED** with the installed UNO Q core. Reported sketch image: 106,076 bytes (13% of 786,432 bytes flash); global RAM: 44,048 bytes (16% of 262,144 bytes). **Upload and sensor response were not tested**; there was no attached AS7343 in this build check.
 
 Added [`docs/CODE_REVIEW_GUIDE.md`](CODE_REVIEW_GUIDE.md) with the data path, file reading order, RPC/schema contracts, unit interpretation, and limits of host stubs. Added source comments at the hardware, storage, transport, UI, and test-fixture boundaries to explain intent and what each layer does not guarantee.
+
+## User's & Programmer's Guide — 2026-10-25
+
+Created `docs/USER_AND_PROGRAMMERS_GUIDE.md` as the editable guide and exported `docs/USER_AND_PROGRAMMERS_GUIDE.pdf` (8 A4 pages) with Chromium's print renderer. The PDF was reviewed page by page for layout, cover contrast, code blocks, data tables, and the dashboard screenshot. It describes current operation and architecture, the standalone AS7343 Qwiic/header option, development contracts, safety boundaries, validation limits, and a clearly labeled future roadmap toward bounded autonomous laboratory workflows. Synthetic dashboard values are explicitly identified as illustrative rather than physical measurements.
