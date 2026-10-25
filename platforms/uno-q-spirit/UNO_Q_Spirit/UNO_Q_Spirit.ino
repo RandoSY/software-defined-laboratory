@@ -75,7 +75,7 @@ void probeDevices() {
   if (!dsFound) {
     dsFound=findDS18();
     tempState=dsFound?"WARMUP":"MISSING";
-    if (!dsFound) errorTemp++;
+    if (!dsFound) {haveTemperature=false; errorTemp++;}
   }
   if (!spectrumFound) {
     Wire.beginTransmission(AS7343_ADDRESS);
@@ -140,7 +140,7 @@ void updateHX(uint32_t now) {
 
 void beginTemperature(uint32_t now) {
   if (!dsFound) {tempState="MISSING"; return;}
-  if (!oneWire.reset()) {tempState="MISSING";dsFound=false;errorTemp++;return;}
+  if (!oneWire.reset()) {tempState="MISSING";dsFound=false;haveTemperature=false;errorTemp++;return;}
   oneWire.select(dsAddr); oneWire.write(0x44,0); // powered 3-wire mode ONLY
   temperatureRequested=true; tempStarted=now; tempState="WARMUP";
 }
@@ -148,13 +148,13 @@ void beginTemperature(uint32_t now) {
 void finishTemperature(uint32_t now) {
   if (!temperatureRequested || now-tempStarted<750) return;
   temperatureRequested=false;
-  if (!oneWire.reset()) { tempState="MISSING";dsFound=false;errorTemp++;return; }
+  if (!oneWire.reset()) { tempState="MISSING";dsFound=false;haveTemperature=false;errorTemp++;return; }
   oneWire.select(dsAddr);oneWire.write(0xBE);
   uint8_t data[9]; for (uint8_t i=0;i<9;i++)data[i]=oneWire.read();
-  if (OneWire::crc8(data,8)!=data[8]) {tempState="FAULT";errorTemp++;return;}
+  if (OneWire::crc8(data,8)!=data[8]) {tempState="FAULT";haveTemperature=false;errorTemp++;return;}
   int16_t raw=static_cast<int16_t>(static_cast<uint16_t>(data[0]) | (static_cast<uint16_t>(data[1])<<8));
   const float value=raw/16.0f;
-  if (!spirit::plausibleTemperature(value)) {tempState="FAULT";errorTemp++;return;}
+  if (!spirit::plausibleTemperature(value)) {tempState="FAULT";haveTemperature=false;errorTemp++;return;}
   tempC=value;haveTemperature=true;tempState="OK";successTemp++;
 }
 
