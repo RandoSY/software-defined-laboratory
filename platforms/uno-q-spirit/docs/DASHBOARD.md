@@ -49,3 +49,8 @@ The current server uses plain HTTP and has no login; it is intended for a truste
 ## Accessibility
 
 Use the **Text size** selector in the header to choose Default, Larger (110%), or Largest (120%). The choice is saved in this browser and restored on the next visit.
+
+
+## Screenshot
+
+The README includes a current capture of the Monitor tab at [`docs/images/dashboard-monitor.png`](images/dashboard-monitor.png). It shows connected synthetic telemetry for interface illustration; displayed values are not physical sensor measurements.
