@@ -17,7 +17,7 @@ The historic 5 V Nugget/AVR Spirit PDF assigns **I²C to A4/A5**. Arduino's offi
 
 ArduinoCore-zephyr has also introduced `Wire2` support for A4/A5 in newer releases, but the installed board package's exact support must be verified before changing code. Using the physical Qwiic socket requires `Wire1.begin()` and passing `&Wire1` to the AS7343 library; the unmodified Spirit sketch is **not** configured for that Qwiic bus.
 
-**Want to test only the spectrometer?** Use the [standalone AS7343 Qwiic example](../examples/as7343-qwiic-test/README.md): plug the AS7343 STEMMA QT cable into the UNO Q Qwiic socket, compile its independent sketch, and read CSV-like spectral counts in Serial Monitor. This path needs no Spirit shield or other Spirit sensors and does not use Router Bridge. The UNO Q Qwiic socket uses `Wire1` and is **3.3 V only**; do not use the Spirit sketch on that port without changing its I²C bus configuration.
+**Want to test only the spectrometer?** Use the [standalone AS7343 Qwiic example](../examples/as7343-qwiic-test/README.md): plug the AS7343 STEMMA QT cable into the UNO Q Qwiic socket (or use four jumper wires on D20/D21); the independent sketch auto-detects either bus and prints spectral counts in Serial Monitor. This path needs no Spirit shield or other Spirit sensors and does not use Router Bridge. The UNO Q Qwiic socket uses `Wire1` and is **3.3 V only**; do not use the Spirit sketch on that port without changing its I²C bus configuration.
 
 ## Parts
 
