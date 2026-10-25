@@ -4,7 +4,7 @@
 
 | Check | Outcome | Evidence/limits |
 |---|---|---|
-| Python `unittest discover` | PASS | 12 named tests, including missing mock sensors, malformed response, invalid gain, CSV and bridge timeouts |
+| Python `unittest discover` | PASS | 14 named tests, including missing mock sensors, malformed response, invalid gain, CSV and bridge timeouts |
 | C++ standard-library filter assertions | PASS | Signed 24-bit edges, echo conversion, invalid values, running moments, intervals; `g++ -std=c++17 -Wall -Wextra -Werror` |
 | Arduino sketch built with **host C++ mock headers** | PASS | Sketch syntax under stubbed Arduino, Zephyr kernel and Adafruit interfaces; simulated absent sensors and mode commands |
 | Synthetic host CLI | PASS | JSON sample and CSV capture in mock transport |
@@ -24,3 +24,5 @@ python3 python/spirit_cli.py --mock status
 ```
 
 No hardware function is certified. This is **a software engineering preview with disciplined validation boundaries**.
+
+**Review addendum (2026-10-25):** Verified UNO Q default Wire D20/D21 versus historical A4/A5; added direct `profile prototype` CLI and cleared cached temperature validity on DS18B20 probe or read failures. Physical hardware and genuine UNO Q board-core compilation remain unverified.
