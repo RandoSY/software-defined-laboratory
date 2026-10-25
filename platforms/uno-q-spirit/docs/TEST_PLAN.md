@@ -6,7 +6,7 @@
 
 - [ ] Obtain source KiCad schematic/PCB, exact revision and every header's pin-1 orientation; compare with historical PDF pin map.
 - [ ] Check no short 3V3-to-GND, 5V-to-GND, 3V3-to-5V or terminal-to-USB VBUS.
-- [ ] Map D2–D9 and A4/A5 to actual connectors with meter, record net names.
+- [ ] For a custom Spirit redesign, map historical D2–D9 and A4/A5 to actual connectors with meter; for the **prototype shield**, attach AS7343 to default `Wire` on **D20/D21**, not historical A4/A5.
 - [ ] Verify HC-SR04 type: use real 3.3 V echo output or certified level translator at D8.
 - [ ] Check HX711 module VCC/VDD/DOUT and load-cell excitation; I²C 0x39 breakout's regulator/pullups.
 - [ ] Validate buzzer is an active 3.3 V compatible module/driver, not raw inductive load.
@@ -30,6 +30,7 @@
 - [ ] DS18B20: compare 0°C ice bath, ambient and modest warm points; CRC errors must not appear as valid temperatures.
 - [ ] HX711: vary calibrated masses, tare, calibrate and repeat; check count noise under still and moving conditions.
 - [ ] HC-SR04: compare ruler positions at 5, 10, 20, 50, 100, 200 cm; measure pulse width and timeout.
+- [ ] Standalone AS7343 Qwiic bring-up: use `examples/as7343-qwiic-test/` with the breakout connected directly to the UNO Q Qwiic socket (`Wire1`), with no Spirit shield or other sensors; confirm address/init and CSV-like response in Serial Monitor.
 - [ ] AS7343: validate chip ID at 0x39, vary gain 0–12, inspect saturation and 18-slot mapping under known light sources.
 - [ ] Measure command round-trip response, loop jitter, and spectral read blocking under disconnect/reconnect.
 - [ ] Keep sensor current and CPU/thermal budget within UNO Q specifications.
