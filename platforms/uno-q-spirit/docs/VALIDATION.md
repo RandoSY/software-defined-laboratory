@@ -136,6 +136,6 @@ The dashboard uses plain HTTP without authentication and is intended for the tru
 
 Added `examples/as7343-qwiic-test/`: a sensor-only sketch that probes the UNO Q's Qwiic `Wire1` bus first and falls back to the standard `Wire` bus on D20/D21. This permits a STEMMA QT cable or ordinary jumper leads and requires no Spirit shield, companion sensors, or Router Bridge. The sketch reports its selected bus and emits two-second CSV-style rows with 18 raw driver slots and saturation flags.
 
-`arduino-cli compile --fqbn arduino:zephyr:unoq --build-path /tmp/uno_q_as7343_qwiic_test_build examples/as7343-qwiic-test` **PASSED** with the installed UNO Q core. Reported sketch image: 106,068 bytes (13% of 786,432 bytes flash); global RAM: 44,048 bytes (16% of 262,144 bytes). **Upload and sensor response were not tested**; there was no attached AS7343 in this build check.
+`arduino-cli compile --fqbn arduino:zephyr:unoq --build-path /tmp/uno_q_as7343_qwiic_test_build examples/as7343-qwiic-test` **PASSED** with the installed UNO Q core. Reported sketch image: 106,076 bytes (13% of 786,432 bytes flash); global RAM: 44,048 bytes (16% of 262,144 bytes). **Upload and sensor response were not tested**; there was no attached AS7343 in this build check.
 
 Added [`docs/CODE_REVIEW_GUIDE.md`](CODE_REVIEW_GUIDE.md) with the data path, file reading order, RPC/schema contracts, unit interpretation, and limits of host stubs. Added source comments at the hardware, storage, transport, UI, and test-fixture boundaries to explain intent and what each layer does not guarantee.
