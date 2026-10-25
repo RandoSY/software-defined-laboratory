@@ -1,6 +1,8 @@
 # Install, run and command the UNO Q Spirit firmware
 
-**First hardware test:** Use the [two-sensor prototype shield](PROTOTYPE_SHIELD_QUICKSTART.md), with DS18B20 D2 and AS7343 `Wire` **D20/D21**. In the CLI shell enter `profile prototype` before `mode live` to suppress HX711 and ultrasonic polling.
+**First hardware attempt?** Follow the [two-sensor prototype-shield quickstart](PROTOTYPE_SHIELD_QUICKSTART.md) and use `profile prototype` **before** `mode live`.
+
+The sketch uses UNO Q `Wire` on **D20/D21**; historical Spirit A4/A5 is **not** the default `Wire` bus.
 
 ## 1. Build on Arduino IDE
 
@@ -70,3 +72,14 @@ Mock mode has no hardware access and deliberately does not pretend to exercise M
 ## 5. Debugging
 
 The UNO Q exposes internal STM32 SWD via Qualcomm and has an `arduino-debug` / OpenOCD workflow. Debug symbols for dynamically relocated Arduino sketches require correct runtime symbol addresses. A host C++ syntax check does **not** prove that interrupt locking, bus timeouts or Zephyr scheduling work on silicon. Inspect logic analyzer captures before declaring HX711 or OneWire timing stable. Official: https://docs.zephyrproject.org/latest/boards/arduino/uno_q/doc/index.html
+
+## 6. Chrome experiment dashboard
+
+Start the Linux-side dashboard from the project directory:
+
+```bash
+source /home/arduino/.venvs/uno-q-spirit/bin/activate
+python python/dashboard_server.py
+```
+
+Open **http://192.168.0.165:7000** in Chrome on the same LAN. The dashboard polls the MCU's `spirit.status` RPC, displays the reported sensor states, records experiment snapshots on Linux, stores runs in SQLite, and provides per-run CSV downloads. Starting/stopping a dashboard run controls Linux recording only; it does not switch the firmware between synthetic and live modes. Full details, storage path and API endpoints are in [`DASHBOARD.md`](DASHBOARD.md).
