@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102758">
+  <title>UNO Q Spirit · Experiment Console</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-lockup">
+      <img src="/brand/uno-q-spirit-logo.svg" alt="UNO Q Spirit — Embedded Laboratory Instrumentation" class="brand-logo">
+      <div class="brand-divider"></div>
+      <div class="product-label"><span>EXPERIMENT CONSOLE</span><small>INSTRUMENTATION · DATA · REVIEW</small></div>
+    </div>
+    <div class="header-tools">
+      <label class="font-size-control" for="font-size-select">Text size
+        <select id="font-size-select" aria-label="Dashboard text size">
+          <option value="normal">Default</option>
+          <option value="large">Larger</option>
+          <option value="largest">Largest</option>
+        </select>
+      </label>
+      <div class="connection-cluster">
+      <span id="connection-dot" class="connection-dot"></span>
+      <div><strong id="connection-label">Connecting to board</strong><small id="connection-detail">Router Bridge status</small></div>
+      <span id="mode-chip" class="mode-chip">—</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="intro-row">
+      <div>
+        <p class="eyebrow">UNO Q · STM32U585 + LINUX MPU</p>
+        <h1>Experiment management</h1>
+        <p class="intro-copy">The STM32 acquires sensor data. The Linux side records runs and prepares them for review.</p>
+      </div>
+      <div class="board-pill"><span class="board-pulse"></span><div><small>BOARD ADDRESS</small><strong>192.168.0.165</strong></div></div>
+    </section>
+
+    <section id="notice" class="notice hidden" role="alert"></section>
+    <section id="operator-feedback" class="operator-feedback hidden" role="status" aria-live="polite"></section>
+
+    <nav class="tabbar" role="tablist" aria-label="Dashboard sections">
+      <button id="tab-monitor" class="tab-button active" type="button" role="tab" aria-selected="true" aria-controls="panel-monitor" tabindex="0"><span class="tab-icon">◉</span>Monitor</button>
+      <button id="tab-experiments" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-experiments" tabindex="-1"><span class="tab-icon">▤</span>Experiments<span id="tab-recording-badge" class="tab-badge hidden">RECORDING</span></button>
+      <button id="tab-archive" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-archive" tabindex="-1"><span class="tab-icon">▣</span>Archive</button>
+      <span class="tabbar-spacer"></span>
+      <span class="tabbar-updated">Updated <strong id="updated-at">—</strong></span>
+    </nav>
+
+    <section id="panel-monitor" class="tab-panel" role="tabpanel" aria-labelledby="tab-monitor" tabindex="0">
+      <div class="section-heading">
+        <div><p class="eyebrow">LIVE INSTRUMENTATION</p><h2>Sensor overview</h2></div>
+        <span id="run-summary-chip" class="summary-chip">NO ACTIVE RUN</span>
+      </div>
+      <section class="sensor-grid" aria-label="Sensor readings">
+        <article class="sensor-card temperature-card">
+          <div class="card-top"><span class="sensor-icon temp-icon">°</span><span class="state-badge waiting" id="temp-state">WAITING</span></div>
+          <p class="card-label">TEMPERATURE</p>
+          <div class="reading"><span id="temp-value">—</span><span class="unit">°C</span></div>
+          <p class="card-foot">DS18B20 · D2</p>
+        </article>
+        <article class="sensor-card">
+          <div class="card-top"><span class="sensor-icon weight-icon">↧</span><span class="state-badge waiting" id="hx-state">WAITING</span></div>
+          <p class="card-label">LOAD CELL</p>
+          <div class="reading"><span id="hx-value">—</span><span class="unit">counts</span></div>
+          <p class="card-foot" id="hx-foot">HX711 · D3 / D4</p>
+        </article>
+        <article class="sensor-card">
+          <div class="card-top"><span class="sensor-icon distance-icon">↔</span><span class="state-badge waiting" id="distance-state">WAITING</span></div>
+          <p class="card-label">DISTANCE</p>
+          <div class="reading"><span id="distance-value">—</span><span class="unit">cm</span></div>
+          <p class="card-foot">Ultrasonic · D7 / D8</p>
+        </article>
+        <article class="sensor-card spectral-card">
+          <div class="card-top"><span class="sensor-icon spectral-icon">◉</span><span class="state-badge waiting" id="spectral-state">WAITING</span></div>
+          <p class="card-label">MULTISPECTRAL</p>
+          <div class="spectral-meta"><span>AS7343 · 18 readout slots</span><span>Gain <b id="spectral-gain">—</b></span></div>
+          <div id="spectral-bars" class="spectral-bars" aria-label="AS7343 channel counts"></div>
+          <p class="card-foot">Raw counts · not wavelength-calibrated</p>
+        </article>
+      </section>
+      <section class="content-grid monitor-grid">
+        <article class="panel chart-panel">
+          <div class="panel-heading"><div><p class="eyebrow">RECENT SIGNAL</p><h2>Temperature trend</h2></div><span class="range-chip">LAST 5 MIN</span></div>
+          <div class="chart-legend"><span class="legend-dot"></span><span>Temperature</span><span class="chart-unit">°C</span></div>
+          <div class="chart-wrap"><canvas id="temperature-chart" aria-label="Temperature over time"></canvas><div id="chart-empty" class="chart-empty">Waiting for telemetry…</div></div>
+        </article>
+        <article class="panel monitor-summary">
+          <p class="eyebrow">EXPERIMENT LOGGER</p><h2 id="monitor-run-title">Ready to record</h2>
+          <p id="monitor-run-copy">Create a named run to store timestamped MCU snapshots on the Linux side.</p>
+          <div class="summary-divider"></div>
+          <div class="summary-line"><span>Data source</span><strong id="source-value">—</strong></div>
+          <div class="summary-line"><span>MCU loop ticks</span><strong id="loop-ticks">—</strong></div>
+          <button class="button secondary" type="button" data-open-tab="experiments">Set up an experiment <b>→</b></button>
+        </article>
+      </section>
+    </section>
+
+    <section id="panel-experiments" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-experiments" tabindex="0">
+      <div class="section-heading"><div><p class="eyebrow">LINUX EXPERIMENT MANAGER</p><h2>Configure a recording</h2></div><span class="section-note">Acquisition remains on the STM32</span></div>
+      <section class="content-grid experiment-grid">
+        <article class="panel run-panel">
+          <div class="panel-heading"><div><p class="eyebrow">RUN SETUP</p><h2>Name this experiment</h2></div><span id="recording-chip" class="recording-chip"><i></i> NOT RECORDING</span></div>
+          <form id="run-form">
+            <label for="run-name">Experiment name</label>
+            <input id="run-name" name="name" maxlength="100" required value="Temperature study" placeholder="e.g. Ambient stability test">
+            <div class="form-row">
+              <div><label for="sample-interval">Recording interval</label><div class="input-suffix"><input id="sample-interval" name="interval_s" type="number" min="1" max="3600" step="1" value="3" required><span>seconds</span></div></div>
+              <div class="run-mode-box"><label>Data source</label><div id="experiment-source">—</div></div>
+            </div>
+            <label for="run-notes">Run notes <span class="optional">OPTIONAL</span></label>
+            <textarea id="run-notes" name="notes" rows="3" maxlength="2000" placeholder="Sample, setup, conditions, or observations"></textarea>
+            <div class="run-actions"><button id="start-run" class="button primary" type="submit" disabled><span>Start recording</span><b>→</b></button><button id="stop-run" class="button stop hidden" type="button">Stop run</button></div>
+            <p class="form-hint">Start and stop control Linux-side recording only. The MCU continues its current acquisition mode.</p>
+          </form>
+          <div id="active-run" class="active-run hidden"></div>
+        </article>
+        <article class="panel workflow-panel">
+          <p class="eyebrow">HOW A RUN WORKS</p><h2>From setup to review</h2>
+          <ol class="workflow-list">
+            <li><span>01</span><div><strong>Describe</strong><p>Name the run, set the recording interval, and note the setup.</p></div></li>
+            <li><span>02</span><div><strong>Record</strong><p>Linux timestamps each status snapshot and stores it in the local archive.</p></div></li>
+            <li><span>03</span><div><strong>Review</strong><p>Stop the run, then open Archive to download a CSV for analysis.</p></div></li>
+          </ol>
+          <div class="data-source-note"><span class="note-spark">✦</span><p>Synthetic readings are labeled in the run and CSV. Live sensor readings require the firmware to already be in live mode.</p></div>
+        </article>
+      </section>
+    </section>
+
+    <section id="panel-archive" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-archive" tabindex="0">
+      <div class="section-heading"><div><p class="eyebrow">LOCAL DATA STORE</p><h2>Experiment archive</h2></div><button id="refresh-runs" class="button secondary compact" type="button">Refresh archive <span>↻</span></button></div>
+      <section class="panel runs-panel">
+        <div class="panel-heading"><div><p class="eyebrow">RECENT RUNS</p><h2>Recorded experiments</h2></div><span id="archive-count" class="summary-chip">0 RUNS</span></div>
+        <div class="table-scroll"><table><thead><tr><th>EXPERIMENT</th><th>STARTED (UTC)</th><th>MODE</th><th>SAMPLES</th><th>STATUS</th><th></th></tr></thead><tbody id="runs-body"><tr><td colspan="6" class="table-empty">No recorded experiments yet.</td></tr></tbody></table></div>
+        <p class="archive-note">CSV exports include UTC timestamps, sensor states and values, HX711 calibration status, and all 18 AS7343 readout slots.</p>
+      </section>
+    </section>
+
+    <footer class="page-footer"><span>UNO Q SPIRIT · ENGINEERING PREVIEW</span><span>MCU acquires · Linux records · You interpret</span></footer>
+  </main>
+  <script src="/app.js" defer></script>
+</body>
+</html>
