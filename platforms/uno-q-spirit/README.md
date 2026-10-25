@@ -19,11 +19,12 @@ Exercise the original AVR Spirit 2-Wire shield's sensor interfaces safely on a 3
 - `UNO_Q_Spirit/UNO_Q_Spirit.ino` — complete Arduino C++ sketch, runtime RPC endpoints `spirit.status` / `spirit.command`.
 - `UNO_Q_Spirit/filters.h` — pure C++ algorithms and numeric guards.
 - `python/spirit_cli.py` — Debian CLI, local mock mode and CSV export.
+- `python/dashboard_server.py` + `dashboard/` — LAN experiment dashboard, SQLite run archive and per-run CSV export; setup in [`docs/DASHBOARD.md`](docs/DASHBOARD.md).
 - `tests/test_spirit_cli.py`, `tests/cpp/` and `tests/stubs/` — desktop tests and mock Arduino/Zephyr compile harness.
 - `docs/PRODUCT_SPEC.md` — requirements, assumptions, acceptance and limitations.
 - `docs/PINS_AND_SAFETY.md` — historical documented pin contract, 3.3 V adaptation plan.
 - `docs/BUILD_AND_RUN.md` — Arduino setup, commands, Zephyr specifics, host CLI.
-- **[Two-sensor prototype-shield quickstart](docs/PROTOTYPE_SHIELD_QUICKSTART.md)** — start with DS18B20 + AS7343, no custom PCB.
+- **`docs/PROTOTYPE_SHIELD_QUICKSTART.md` — start here: two sensors on an empty prototype shield (no Spirit PCB needed).**
 - **[Spectral sensor selection and fidelity](docs/SPECTRAL_SELECTION.md)** — AS7343 first target; compare with newer TCS3448 before sensor procurement.
 - `docs/TEST_PLAN.md` — electrical and functional acceptance protocol.
 - `docs/VALIDATION.md` — evidence of tests actually run.
@@ -40,12 +41,12 @@ Exercise the original AVR Spirit 2-Wire shield's sensor interfaces safely on a 3
 | HC-SR04 TRIG | D7 | D7_TRIG |
 | HC-SR04 ECHO | D8 | D8_ECHO |
 | **Active buzzer module** signal | D9 | D9_BUZZER |
-| Historic Spirit I²C SDA / SCL | A4 / A5 | SDA / SCL (original 5 V shield) |
-| **Current UNO Q sketch `Wire` SDA / SCL** | **D20 / D21** | **AS7343 prototype wiring** |
+| I²C SDA / SCL (historical Spirit PCB) | A4 / A5 | SDA / SCL |
+| **I²C SDA / SCL (current test firmware using `Wire`)** | **D20 / D21** | **UNO Q default `Wire`; AS7343 prototype** |
 
-**Important correction:** UNO Q default `Wire` uses **D20/D21**, NOT historical A4/A5. This sketch's AS7343 must connect to D20/D21; newer `Wire2` can serve A4/A5 only with a deliberate firmware change. See the [prototype quickstart](docs/PROTOTYPE_SHIELD_QUICKSTART.md).
+**Important:** The original 5-V shield had I²C on A4/A5; the UNO Q Arduino sketch uses `Wire` on **D20/D21**, so the prototype spectral sensor must be wired to **D20/D21**. ArduinoCore-zephyr provides additional buses but requires deliberate source configuration. See the [two-sensor quickstart](docs/PROTOTYPE_SHIELD_QUICKSTART.md).
 
-These are **logical mappings from the historical PDF**, not a claim that the 5-V original physical board has been converted. **The original PDF explicitly states HC-SR04 ECHO is unshifted 5 V; it is unsafe to mate the original board directly until adapted.**
+The original signals are **logical mappings from the historical PDF**, not a claim that the 5-V original physical board has been converted. **The original PDF explicitly states HC-SR04 ECHO is unshifted 5 V; it is unsafe to mate the original board directly until adapted.**
 
 ## First run (no hardware)
 
@@ -76,7 +77,11 @@ python python/spirit_cli.py shell
 python python/spirit_cli.py capture --count 100 --period 1 --output measurements.csv
 ```
 
-CLI direct command or shell examples: `profile prototype` (DS18B20 + AS7343), `profile all`, `mode synthetic`, `mode live`, `gain 6` (64x), `interval 1000`, `tare`, `cal grams 100`, `start`, `stop`, `reset-stats` (where `cal grams` is available in the interactive shell). The host CLI never needs elevated privileges but does need permission to access the local router socket.
+CLI direct command or shell examples: `profile prototype` (DS18B20 + AS7343 only), `profile all`, `mode synthetic`, `mode live`, `gain 6` (64x), `interval 1000`, `tare`, `cal grams 100`, `start`, `stop`, `reset-stats` (where `cal grams` is available in the interactive shell). The host CLI never needs elevated privileges but does need permission to access the local router socket.
+
+### Chrome experiment dashboard
+
+On the UNO Q, run `python python/dashboard_server.py` from the project directory after activating `/home/arduino/.venvs/uno-q-spirit`. Then open **http://192.168.0.165:7000** on the same network. The dashboard records experiments on the Linux side and exports per-run CSV files. See [`docs/DASHBOARD.md`](docs/DASHBOARD.md).
 
 ## Original vs proposed changes
 
