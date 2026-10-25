@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'python'))
 import spirit_cli as cli
 
 class FakeBridge:
+    """Record RPC calls while returning predictable synthetic status JSON."""
     def __init__(self): self.calls=[]
     def call(self, method, *args, timeout=5):
         self.calls.append((method, args))
@@ -17,10 +18,13 @@ class FakeBridge:
         return cli.MockBridge().call(cli.RPC_STATUS)
 
 class FailBridge:
+    """Transport fixture for confirming timeout handling and CSV gap rows."""
     def call(self, method, *args, timeout=5):
         raise TimeoutError('simulated disconnection')
 
 class TestCLI(unittest.TestCase):
+    # Tests exercise the host contract; hardware timing and Bridge integration
+    # are documented separately in docs/VALIDATION.md.
     def test_mock_status(self):
         d=cli.sample(cli.MockBridge()); self.assertEqual(d['schema'],1)
         self.assertEqual(d['mode'],'synthetic'); self.assertEqual(len(d['spectral']['channels']),18)
