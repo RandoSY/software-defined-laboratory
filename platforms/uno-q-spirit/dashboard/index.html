@@ -44,6 +44,8 @@
     <section id="notice" class="notice hidden" role="alert"></section>
     <section id="operator-feedback" class="operator-feedback hidden" role="status" aria-live="polite"></section>
 
+    <!-- Each tab controls one panel below; app.js keeps ARIA state and hidden
+         panel state synchronized, including keyboard tab navigation. -->
     <nav class="tabbar" role="tablist" aria-label="Dashboard sections">
       <button id="tab-monitor" class="tab-button active" type="button" role="tab" aria-selected="true" aria-controls="panel-monitor" tabindex="0"><span class="tab-icon">◉</span>Monitor</button>
       <button id="tab-experiments" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="panel-experiments" tabindex="-1"><span class="tab-icon">▤</span>Experiments<span id="tab-recording-badge" class="tab-badge hidden">RECORDING</span></button>
@@ -52,6 +54,7 @@
       <span class="tabbar-updated">Updated <strong id="updated-at">—</strong></span>
     </nav>
 
+    <!-- Live status and recent temperature history; no controls change MCU mode. -->
     <section id="panel-monitor" class="tab-panel" role="tabpanel" aria-labelledby="tab-monitor" tabindex="0">
       <div class="section-heading">
         <div><p class="eyebrow">LIVE INSTRUMENTATION</p><h2>Sensor overview</h2></div>
@@ -101,6 +104,7 @@
       </section>
     </section>
 
+    <!-- Experiment metadata controls Linux-side recording only. -->
     <section id="panel-experiments" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-experiments" tabindex="0">
       <div class="section-heading"><div><p class="eyebrow">LINUX EXPERIMENT MANAGER</p><h2>Configure a recording</h2></div><span class="section-note">Acquisition remains on the STM32</span></div>
       <section class="content-grid experiment-grid">
@@ -132,6 +136,7 @@
       </section>
     </section>
 
+    <!-- Completed runs are immutable snapshots with one CSV export per run. -->
     <section id="panel-archive" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-archive" tabindex="0">
       <div class="section-heading"><div><p class="eyebrow">LOCAL DATA STORE</p><h2>Experiment archive</h2></div><button id="refresh-runs" class="button secondary compact" type="button">Refresh archive <span>↻</span></button></div>
       <section class="panel runs-panel">
