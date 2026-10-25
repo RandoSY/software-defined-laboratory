@@ -1,133 +1,92 @@
-# Software-Defined Laboratory (SDL)
+![UNO Q Spirit engineering concept logo](assets/uno-q-spirit-logo.svg)
 
-**SDL is the central laboratory architecture of the Rando Young Intellectual Estate:** a way to connect inexpensive physical experiments to software and AI without requiring expensive laboratory infrastructure.
+# UNO Q Spirit · Instrumentation Verification Suite
 
-> **Estate status:** `USABLE BUT INCOMPLETE`  
-> The first reference implementation is now repository-local and automatically checked. The remaining readiness gate is a recorded physical end-to-end run on real hardware.
+**Release:** `0.1.1-prototype` — engineering preview, 25 October 2026  
+**Target:** Arduino UNO Q STM32U585 running Arduino's Zephyr-based Arduino core.  
+**Control plane:** Qualcomm Debian 13 + local Arduino RouterBridge, Python CLI.  
+**Provenance:** Adapted from the user's **Nugget 2-Wire Sensor Shield — KiCad Autorouting and Programmer's Guide**, v0.2x, pages 2, 4–6, plus the AVR Spirit UNO Q conversion prompt.  
+**Hardware status:** **UNVERIFIED; DO NOT CONNECT AN UNMODIFIED 5-V SHIELD.**
 
-See [ESTATE_STATUS.md](ESTATE_STATUS.md) for the exact readiness definition.
+## Purpose
 
-## Start here
+Exercise the original AVR Spirit 2-Wire shield's sensor interfaces safely on a 3.3 V UNO Q, with missing-sensor fault isolation, deterministic mock data, instrument-quality statistics, tunable AS7343 gain, explicit HX711 tare/calibration, and a local CLI/CSV recording interface. The STM32 runs the Arduino sketch. Zephyr schedules a separate Bridge initialization thread, keeping local acquisition alive if Linux routing is unavailable during startup.
 
-If you want to run something rather than study the history:
+## Source map
 
-1. **[Quick Start](docs/QUICKSTART.md)** — shortest Windows-friendly route through the first implementation.
-2. **[First Acceptance Path](docs/FIRST_ACCEPTANCE_PATH.md)** — acceptance criteria and rationale.
-3. **[First Acceptance Validation](validation/FIRST_ACCEPTANCE_VALIDATION.md)** — the physical test record that must pass before `READY`.
-4. **[Project History](PROJECT_HISTORY.md)** — how SUPER, historical prototypes, and SDL fit together.
-5. **[Repository Standard](docs/REPOSITORY_STANDARD.md)** — the template this repository establishes for the wider estate.
+- `assets/uno-q-spirit-logo.svg` — scalable logo for GitHub and documentation; `assets/uno-q-spirit-logo.png` — original generated concept image (included in ZIP but omitted from GitHub text release).
 
-## The core pattern
+- `UNO_Q_Spirit/UNO_Q_Spirit.ino` — complete Arduino C++ sketch, runtime RPC endpoints `spirit.status` / `spirit.command`.
+- `UNO_Q_Spirit/filters.h` — pure C++ algorithms and numeric guards.
+- `python/spirit_cli.py` — Debian CLI, local mock mode and CSV export.
+- `python/dashboard_server.py` + `dashboard/` — LAN experiment dashboard, SQLite run archive and per-run CSV export; setup in [`docs/DASHBOARD.md`](docs/DASHBOARD.md).
+- `tests/test_spirit_cli.py`, `tests/cpp/` and `tests/stubs/` — desktop tests and mock Arduino/Zephyr compile harness.
+- `docs/PRODUCT_SPEC.md` — requirements, assumptions, acceptance and limitations.
+- `docs/PINS_AND_SAFETY.md` — historical documented pin contract, 3.3 V adaptation plan.
+- `docs/BUILD_AND_RUN.md` — Arduino setup, commands, Zephyr specifics, host CLI.
+- **`docs/PROTOTYPE_SHIELD_QUICKSTART.md` — start here: two sensors on an empty prototype shield (no Spirit PCB needed).**
+- **[Spectral sensor selection and fidelity](docs/SPECTRAL_SELECTION.md)** — AS7343 first target; compare with newer TCS3448 before sensor procurement.
+- `docs/TEST_PLAN.md` — electrical and functional acceptance protocol.
+- `docs/VALIDATION.md` — evidence of tests actually run.
 
-The minimum SDL path is intentionally simple:
+## Historical pin contract
 
-**physical endpoint -> transport -> host bridge -> observation/recording -> AI collaboration where useful -> real measurement**
+| Function | Arduino UNO Q header | Original signal |
+|---|---|---|
+| DS18B20 1-Wire | D2 | D2_ONEWIRE |
+| HX711 DOUT | D3 | HX711_DT |
+| HX711 PD_SCK | D4 | HX711_SCK |
+| START input, active-low | D5 | D5_START |
+| TARE input, active-low | D6 | D6_TARE |
+| HC-SR04 TRIG | D7 | D7_TRIG |
+| HC-SR04 ECHO | D8 | D8_ECHO |
+| **Active buzzer module** signal | D9 | D9_BUZZER |
+| I²C SDA / SCL (historical Spirit PCB) | A4 / A5 | SDA / SCL |
+| **I²C SDA / SCL (current test firmware using `Wire`)** | **D20 / D21** | **UNO Q default `Wire`; AS7343 prototype** |
 
-A useful SDL can begin with an Arduino Uno, Multi-Function Shield, and one sensor over USB serial. Richer reference systems may use Pico W, ESP32-class hardware, micro:bit, BLE, Wi-Fi, browser interfaces, MCP, and dynamically deployed code.
+**Important:** The original 5-V shield had I²C on A4/A5; the UNO Q Arduino sketch uses `Wire` on **D20/D21**, so the prototype spectral sensor must be wired to **D20/D21**. ArduinoCore-zephyr provides additional buses but requires deliberate source configuration. See the [two-sensor quickstart](docs/PROTOTYPE_SHIELD_QUICKSTART.md).
 
-Advanced capabilities are extensions of the same pattern, not prerequisites for proving it.
+The original signals are **logical mappings from the historical PDF**, not a claim that the 5-V original physical board has been converted. **The original PDF explicitly states HC-SR04 ECHO is unshifted 5 V; it is unsafe to mate the original board directly until adapted.**
 
-## First reference implementation
+## First run (no hardware)
 
-The first outsider-verifiable SDL path is:
-
-**DS18B20 -> Arduino Uno / Multi-Function Shield tier -> USB serial -> Python host bridge -> CSV -> graph**
-
-Repository-local implementation:
-
-- `endpoints/uno_ds18b20/uno_ds18b20.ino` — endpoint firmware.
-- `bridge/protocol.py` — protocol parsing and validation.
-- `bridge/serial_logger.py` — USB serial or fixture input to CSV.
-- `bridge/plot_csv.py` — interactive or PNG graph output.
-- `validation/fixtures/serial_sample.txt` — known-good software fixture.
-- `tests/test_bridge.py` — host protocol/logging tests.
-- `.github/workflows/reference-standard.yml` — automated host checks and Arduino Uno compilation.
-
-Before connecting hardware, the fixture can be passed through the same logger:
-
-```powershell
-python -m pip install -r bridge/requirements.txt
-python bridge/serial_logger.py --input-file validation/fixtures/serial_sample.txt --output validation/software_check.csv
-python bridge/plot_csv.py validation/software_check.csv --output validation/software_check.png
+```bash
+python3 python/spirit_cli.py --mock status
+python3 python/spirit_cli.py --mock capture --count 10 --period 0.1 --output samples.csv
+python3 -m unittest discover -s tests -v
+c++ -std=c++17 -Wall -Wextra -Werror tests/cpp/test_filters.cpp -o /tmp/spirit_filters && /tmp/spirit_filters
+c++ -std=c++17 -Wall -Wextra -Werror -Itests/stubs -x c++ tests/cpp/test_sketch.cpp -o /tmp/spirit_sketch && /tmp/spirit_sketch
 ```
 
-The physical validation procedure is in [docs/QUICKSTART.md](docs/QUICKSTART.md).
+## Build for STM32
 
-## Human-readable protocol
+1. Install **Arduino UNO Q board** support in Arduino IDE and use the latest official core.
+2. Install **Adafruit AS7343**, **Adafruit BusIO** (dependency), **OneWire**, and **Arduino_RouterBridge** libraries via Arduino Library Manager/board platform. `Wire` is provided by the core.
+3. Open `UNO_Q_Spirit/UNO_Q_Spirit.ino` and select **Arduino UNO Q**, then Verify. Upload by the supported Arduino UNO Q workflow.
+4. This preview has **not** been compiled with the actual UNO Q toolchain. Do not treat host-only tests as a hardware-build pass. See `docs/BUILD_AND_RUN.md`.
+5. The firmware boots in **SYNTHETIC** mode. Only enter `mode live` after the shield's 3.3 V electrical qualification.
 
-The baseline endpoint intentionally says very little:
+## Python control on the Qualcomm
 
-```text
-SDL,READY,DS18B20
-TEMP_C,23.625
-ERROR,SENSOR
+```bash
+python3 -m venv ~/spirit-venv
+. ~/spirit-venv/bin/activate
+pip install arduino-router-bridge
+python python/spirit_cli.py status
+python python/spirit_cli.py shell
+python python/spirit_cli.py capture --count 100 --period 1 --output measurements.csv
 ```
 
-This is a deliberate design choice. Extra metadata should be added only when it solves an actual need.
+CLI direct command or shell examples: `profile prototype` (DS18B20 + AS7343 only), `profile all`, `mode synthetic`, `mode live`, `gain 6` (64x), `interval 1000`, `tare`, `cal grams 100`, `start`, `stop`, `reset-stats` (where `cal grams` is available in the interactive shell). The host CLI never needs elevated privileges but does need permission to access the local router socket.
 
-## Canonical components
+### Chrome experiment dashboard
 
-- **SDL** — the overall laboratory architecture.
-- **SUPER** — a dedicated low-cost laboratory hardware/reference implementation family within SDL.
-- **MCP** — a higher-level interface layer for AI-assisted laboratory work where appropriate.
-- **Endpoint** — sensing, actuation, timing, and simple local behavior.
-- **Transport** — USB serial, BLE UART, Wi-Fi/TCP, or another inspectable link.
-- **Host bridge** — connects endpoint messages to host-side software.
-- **Protocols** — short, human-readable messages where practical.
-- **Dashboards** — reusable observation and control interfaces.
-- **Reference experiments** — bounded physical experiments proving the architecture end to end.
-- **AI collaboration** — interpretation, coding assistance, experiment variation, model checking, and orchestration where it adds value.
+On the UNO Q, run `python python/dashboard_server.py` from the project directory after activating `/home/arduino/.venvs/uno-q-spirit`. Then open **http://192.168.0.165:7000** on the same network. The dashboard records experiments on the Linux side and exports per-run CSV files. See [`docs/DASHBOARD.md`](docs/DASHBOARD.md).
 
-UNO/MFS, Pico W, micro:bit, ESP32, and similar boards are endpoint/reference tiers, not competing laboratory architectures.
+## Original vs proposed changes
 
-## Design rules
+**Preserved:** pin assignment, educational sensor combinations, user-facing Start/Tare, active buzzer interface, 2-wire/I²C expansion.  
+**Changed conceptually:** 3.3 V voltage domain, mandatory echo level shifting or proven 3.3 V ultrasonic hardware, HX711 supply audit, external power isolation, spectral AS7343 0x39 breakout, bridge telemetry, and testing strategy.  
+**Not delivered:** updated KiCad schematic/PCB, manufacturing files, fabricated shield, verified electrical pin-to-net mapping on the latest original board, installed firmware on IAS-Q.
 
-- Start at the cheapest useful rung.
-- Do not require complexity when a simpler connection is sufficient.
-- Add technology because it answers a real need.
-- Keep messages and measurements inspectable.
-- Separate endpoint behavior from host intelligence.
-- Prefer human-readable protocols where practical.
-- Treat AI as a collaborator with the experiment, not a substitute for the experiment.
-- Preserve a direct path so the physical measurement remains understandable.
-- Keep observational tools such as the Traffic Cop nonessential to basic operation.
-- Distinguish **tested**, **implemented**, **planned**, and **historical** material.
-
-## Repository map
-
-```text
-endpoints/        current endpoint firmware
-bridge/           current host-side bridge and plotting software
-tests/            automated software tests
-validation/       fixtures and physical validation records
-docs/             current operating and estate documentation
-architecture/     preserved architecture documents
-source-snapshots/ pinned historical source repositories
-lineage/          historical lineage material
-archive/          research/reconstruction material
-evidence/         preserved integrity/validation artifacts
-```
-
-Historical code is not treated as current merely because it is reachable through a source snapshot.
-
-## Relationship to CORE 10
-
-SDL supplies instrumentation and AI collaboration. CORE 10 supplies bounded educational investigations that give the infrastructure a reason to exist. One Cup Chemistry and energy experiments are important SDL demonstrations, while their curriculum home remains [core-10](https://github.com/RandoSY/core-10).
-
-## What “finished” means here
-
-A major technical repository is not estate-ready merely because files were copied into GitHub. It should have a clear front door, one reproducible golden path, repository-local source, explicit requirements, known expected output, dated validation evidence, project history, and a clear separation of current and archival material.
-
-The full standard is in [docs/REPOSITORY_STANDARD.md](docs/REPOSITORY_STANDARD.md).
-
-## Current state
-
-**Lifecycle:** `active`  
-**Priority:** P1 finishing work  
-**Estate readiness:** `USABLE BUT INCOMPLETE`
-
-The software and compile-verification infrastructure for the first vertical slice is now present. Promotion to `READY` is intentionally withheld until the documented physical sensor path is run and recorded.
-
-## UNO Q Spirit instrumentation platform
-
-**Engineering preview · STM32U585 + Qualcomm Debian 13.** The [UNO Q Spirit verification suite](platforms/uno-q-spirit/README.md) adapts the historically documented Nugget/AVR Spirit sensor pin contract to an Arduino Zephyr-based STM32 acquisition design, with an Adafruit AS7343 spectral channel, HX711, DS18B20, ultrasonic ranging, synthetic mode, Python Bridge CLI, and fault-isolation software tests. The [product specification](platforms/uno-q-spirit/docs/PRODUCT_SPEC.md) and [validation evidence](platforms/uno-q-spirit/docs/VALIDATION.md) distinguish host-software tests from **pending actual UNO Q compilation, shield electrical modification, and physical sensor acceptance**. **Do not connect the original 5 V shield directly to the UNO Q.**
+Original Arduino, Adafruit and Zephyr marks are used only to name compatible platforms and parts; this project is not affiliated with their vendors.
