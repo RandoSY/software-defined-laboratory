@@ -85,6 +85,10 @@ CLI direct command or shell examples: `profile prototype` (DS18B20 + AS7343 only
 
 On the UNO Q, run `python python/dashboard_server.py` from the project directory after activating `/home/arduino/.venvs/uno-q-spirit`. Then open **http://192.168.0.165:7000** on the same network. The dashboard records experiments on the Linux side and exports per-run CSV files. See [`docs/DASHBOARD.md`](docs/DASHBOARD.md).
 
+![UNO Q Spirit dashboard monitor showing connected synthetic telemetry, sensor cards, temperature trend, and experiment logger](docs/images/dashboard-monitor.png)
+
+*Dashboard screenshot with synthetic telemetry; values shown are simulated.*
+
 ## Original vs proposed changes
 
 **Preserved:** pin assignment, educational sensor combinations, user-facing Start/Tare, active buzzer interface, 2-wire/I²C expansion.  
