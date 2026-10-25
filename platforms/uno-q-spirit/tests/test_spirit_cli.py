@@ -43,6 +43,13 @@ class TestCLI(unittest.TestCase):
         cli.request(m, 'profile all')
         self.assertEqual(cli.sample(m)['hx711_counts']['state'],'MISSING')
 
+    def test_direct_profile_cli(self):
+        args = cli.build_parser().parse_args(['profile', 'prototype'])
+        m = cli.MockBridge()
+        with redirect_stdout(io.StringIO()):
+            self.assertEqual(cli.execute(m, args), 0)
+        self.assertEqual(m.profile, 'prototype')
+
     def test_bad_gain(self):
         with self.assertRaises(ValueError): cli.request(cli.MockBridge(),'gain 13')
     def test_invalid_response(self):
