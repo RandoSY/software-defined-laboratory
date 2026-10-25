@@ -19,6 +19,13 @@ int main(){
   assert(std::string(hxState)=="TIMEOUT");
   assert(std::string(usState)=="TIMEOUT");
   assert(command("tare").str().find("false")!=std::string::npos);
+  assert(command("profile prototype").str().find("true")!=std::string::npos);
+  assert(statusJSON().str().find("\"profile\":\"prototype\"")!=std::string::npos);
+  for(int i=0;i<500;i++)loop();
+  assert(std::string(hxState)=="DISABLED");
+  assert(std::string(usState)=="DISABLED");
+  assert(command("profile all").str().find("true")!=std::string::npos);
+  assert(std::string(hxState)=="WARMUP");
   assert(command("mode synthetic").str().find("true")!=std::string::npos);
   assert(std::string(tempState)=="SYNTH");
   assert(command("no such command").str().find("false")!=std::string::npos);
