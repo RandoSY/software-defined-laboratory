@@ -1,0 +1,301 @@
+:root {
+  color-scheme: dark;
+  --font-scale: 1;
+  --navy: #142139;
+  --blue: #4279b6;
+  --cyan: #8bdbe7;
+  --teal: #9ce4d4;
+  --gold: #efc477;
+  --ink: #edf3fb;
+  --muted: #a9b8cd;
+  --line: #37465e;
+  --paper: #141d2c;
+  --surface: #202d42;
+  --surface-raised: #25344b;
+  --white: #f3f6fc;
+  --green: #98e2c9;
+  --red: #ffabb2;
+  --shadow: 0 14px 40px rgba(2, 8, 20, .24);
+}
+html[data-font-size="large"] { --font-scale: 1.1; }
+html[data-font-size="largest"] { --font-scale: 1.2; }
+
+* { box-sizing: border-box; }
+html {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Manrope, Inter, "Segoe UI", sans-serif;
+  font-synthesis: none;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    radial-gradient(ellipse at 84% 0%, rgba(73, 115, 159, .12), transparent 34rem),
+    var(--paper);
+}
+
+.header-tools { display: flex; align-items: center; gap: 20px; }
+.font-size-control { display: flex; align-items: center; gap: 8px; color: #aebcd0; font-size: calc(10px * var(--font-scale)); white-space: nowrap; }
+.font-size-control select { padding: 7px 24px 7px 9px; border: 1px solid #42516a; border-radius: 7px; background: #202d42; color: #edf3fb; font: 600 calc(10px * var(--font-scale)) Manrope, "Segoe UI", sans-serif; }
+.font-size-control select:focus-visible { outline: 2px solid #9ce4e7; outline-offset: 2px; }
+.topbar {
+  min-height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 12px max(32px, calc((100vw - 1380px) / 2));
+  background: rgba(15, 24, 39, .94);
+  border-bottom: 1px solid #2d3a50;
+  box-shadow: 0 5px 22px rgba(4, 10, 20, .13);
+}
+.brand-lockup { display: flex; align-items: center; gap: 20px; min-width: 0; }
+.brand-logo {
+  display: block;
+  width: 205px;
+  height: auto;
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
+}
+.brand-divider { height: 42px; border-left: 1px solid #3b4960; }
+.product-label span, .product-label small { display: block; }
+.product-label span { color: #e7f2fc; font-size: calc(11px * var(--font-scale)); font-weight: 800; letter-spacing: .14em; }
+.product-label small { margin-top: 5px; color: #9aa9bd; font-size: calc(9px * var(--font-scale)); letter-spacing: .1em; }
+.connection-cluster { display: flex; align-items: center; gap: 10px; color: var(--ink); }
+.connection-cluster strong, .connection-cluster small { display: block; }
+.connection-cluster strong { font-size: calc(12px * var(--font-scale)); }
+.connection-cluster small { margin-top: 3px; color: #a4b1c3; font-size: calc(10px * var(--font-scale)); }
+.connection-dot, .board-pulse { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #9ca9ba; }
+.connection-dot.online, .board-pulse { background: #9ce4c7; box-shadow: 0 0 0 4px rgba(156, 228, 199, .13); }
+.connection-dot.offline { background: #ff9fa9; box-shadow: 0 0 0 4px rgba(255, 159, 169, .13); }
+.mode-chip, .range-chip {
+  margin-left: 12px;
+  padding: 7px 10px;
+  border: 1px solid #43516a;
+  border-radius: 999px;
+  background: #222f43;
+  color: #bec9d8;
+  font: 500 calc(9px * var(--font-scale)) "DM Mono", Consolas, monospace;
+  letter-spacing: .09em;
+}
+.mode-chip.synthetic { border-color: #8a704a; background: #463b2d; color: #f4d394; }
+.mode-chip.live { border-color: #527c70; background: #263f3b; color: #a5e7d0; }
+
+.page-shell { max-width: 1380px; margin: auto; padding: 24px 32px 18px; }
+.intro-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 20px; }
+.eyebrow { margin: 0 0 8px; color: #94ddea; font: 500 calc(9px * var(--font-scale)) "DM Mono", Consolas, monospace; letter-spacing: .16em; }
+.intro-row h1 { margin: 0; color: #f3f6fc; font-size: clamp(calc(27px * var(--font-scale)), 3vw, calc(38px * var(--font-scale))); line-height: 1.08; letter-spacing: -.045em; }
+.intro-copy { margin: 10px 0 0; color: #aab8cb; font-size: calc(13px * var(--font-scale)); }
+.board-pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #202c40;
+  box-shadow: var(--shadow);
+}
+.board-pill small, .board-pill strong { display: block; }
+.board-pill small { color: #a1aec1; font: 500 calc(9px * var(--font-scale)) "DM Mono", Consolas, monospace; letter-spacing: .12em; }
+.board-pill strong { margin-top: 4px; color: #dceafa; font: 500 calc(13px * var(--font-scale)) "DM Mono", Consolas, monospace; }
+.notice { margin: -17px 0 28px; padding: 12px 15px; border: 1px solid #8b7045; border-radius: 9px; background: #3d3529; color: #f3d18d; font-size: calc(12px * var(--font-scale)); }
+.notice.error { border-color: #86535d; background: #422d38; color: #ffb8bf; }
+.hidden { display: none !important; }
+.operator-feedback { display: flex; align-items: center; gap: 10px; margin: -17px 0 20px; padding: 11px 14px; border: 1px solid #537b70; border-radius: 9px; background: #253e3b; color: #b7efdc; font-size: calc(11px * var(--font-scale)); }
+.operator-feedback.error { border-color: #86535d; background: #422d38; color: #ffc0c6; }
+.operator-feedback.pending { border-color: #877448; background: #403a2e; color: #f1d493; }
+.operator-feedback::before { width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%; background: currentColor; content: ""; }
+
+.tabbar { display: flex; align-items: center; gap: 5px; min-height: 50px; margin: 0 0 14px; padding: 4px; border: 1px solid #34435a; border-radius: 11px; background: #1b283b; box-shadow: 0 8px 22px rgba(2, 8, 20, .13); }
+.tab-button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 40px; padding: 0 18px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: #aebcd0; font: 700 calc(11px * var(--font-scale)) Manrope, "Segoe UI", sans-serif; cursor: pointer; transition: color .15s, background .15s, border-color .15s, transform .12s; }
+.tab-button:hover { background: #28364c; color: #ecf4fc; }
+.tab-button:active { transform: translateY(1px); }
+.tab-button:focus-visible, .button:focus-visible, .text-button:focus-visible, .download-link:focus-visible { outline: 2px solid #9ce4e7; outline-offset: 2px; }
+.tab-button.active { border-color: #4b657c; background: #2b3b50; color: #d8f2f4; box-shadow: inset 0 0 0 1px rgba(139, 219, 231, .08); }
+.tab-icon { color: #9bb4cb; font-size: calc(14px * var(--font-scale)); }
+.tab-button.active .tab-icon { color: #9ce4e7; }
+.tab-badge { padding: 4px 6px; border: 1px solid #875b61; border-radius: 999px; background: #4a303b; color: #ffc1c7; font: 500 calc(7px * var(--font-scale)) "DM Mono", Consolas, monospace; letter-spacing: .07em; }
+.tabbar-spacer { flex: 1; }
+.tabbar-updated { padding: 0 10px; color: #9eacc0; font-size: calc(9px * var(--font-scale)); }
+.tabbar-updated strong { color: #d8e1ed; font: 500 calc(9px * var(--font-scale)) "DM Mono", Consolas, monospace; }
+.tab-panel { outline: none; animation: panel-in .18s ease-out; }
+@keyframes panel-in { from { opacity: .72; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+.summary-chip { display: inline-flex; align-items: center; padding: 6px 9px; border: 1px solid #47566c; border-radius: 999px; background: #2a374c; color: #bcc9d8; font: 500 calc(8px * var(--font-scale)) "DM Mono", Consolas, monospace; letter-spacing: .08em; white-space: nowrap; }
+.summary-chip.active { border-color: #587d70; background: #2c4943; color: #b6ebd8; }
+.section-note { color: #a6b4c6; font-size: calc(10px * var(--font-scale)); }
+
+.section-heading { display: flex; align-items: flex-end; justify-content: space-between; margin: 0 0 10px; }
+.section-heading h2, .panel-heading h2 { margin: 0; color: #eef4fc; font-size: calc(17px * var(--font-scale)); letter-spacing: -.025em; }
+.section-heading .eyebrow, .panel-heading .eyebrow { margin-bottom: 5px; }
+.updated-label { color: #a0aec1; font-size: calc(10px * var(--font-scale)); }
+.updated-label strong { margin-left: 4px; color: #d4deeb; font: 500 calc(10px * var(--font-scale)) "DM Mono", Consolas, monospace; }
+
+.sensor-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; }
+.sensor-card, .panel { border: 1px solid var(--line); border-radius: 13px; background: var(--surface); box-shadow: var(--shadow); }
+.sensor-card { position: relative; min-height: 148px; overflow: hidden; padding: 14px 16px 12px; }
+.sensor-card::after { position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: #52617a; content: ""; }
+.temperature-card::after { background: linear-gradient(90deg, #87dce9, #a4e5d5); }
+.sensor-grid .sensor-card:nth-child(2)::after { background: linear-gradient(90deg, #b9b3f4, #d1b7ed); }
+.sensor-grid .sensor-card:nth-child(3)::after { background: linear-gradient(90deg, #8fdbc8, #a9e1b5); }
+.spectral-card::after { background: linear-gradient(90deg, #efc477, #e6a9bd); }
+.card-top { display: flex; align-items: center; justify-content: space-between; }
+.sensor-icon { display: grid; width: 29px; height: 29px; place-items: center; border: 1px solid #4a5d76; border-radius: 9px; background: #2c3a50; color: #c3d7ef; font-size: calc(19px * var(--font-scale)); font-weight: 700; }
+.temp-icon { border-color: #537887; background: #2d4656; color: #a8e4eb; font-size: calc(20px * var(--font-scale)); }
+.weight-icon { border-color: #655f8d; background: #393852; color: #d1c7fa; }
+.distance-icon { border-color: #4c796e; background: #2b4947; color: #b1e5ce; }
+.spectral-icon { border-color: #806d4d; background: #494132; color: #f2d18f; }
+.state-badge { padding: 5px 8px; border-radius: 999px; background: #39465a; color: #c0cada; font: 500 calc(8px * var(--font-scale)) "DM Mono", Consolas, monospace; letter-spacing: .08em; }
+.state-badge.ok, .state-badge.synth { background: #345149; color: #b4eed9; }
+.state-badge.missing, .state-badge.timeout, .state-badge.fault { background: #50373f; color: #ffb5bc; }
+.state-badge.warmup { background: #554933; color: #f3d99d; }
+.state-badge.saturated { background: #57463a; color: #f6c99b; }
+.state-badge.disabled { background: #3b4655; color: #c1cad5; }
+.state-badge.waiting { color: #bac5d4; }
+.card-label { margin: 15px 0 5px; color: #a8b6c8; font: 500 calc(9px * var(--font-scale)) "DM Mono", Consolas, monospace; letter-spacing: .14em; }
+.reading { display: flex; align-items: baseline; gap: 8px; color: #f2f6fc; font: 600 calc(30px * var(--font-scale)) "DM Mono", Consolas, monospace; letter-spacing: -.06em; white-space: nowrap; }
+.temperature-card .reading { color: #b5e9ee; }
+.sensor-card:nth-child(2) .reading { color: #d2cafa; }
+.sensor-card:nth-child(3) .reading { color: #b2e5ce; }
+.unit { color: #a7b4c6; font: 400 calc(10px * var(--font-scale)) Manrope, "Segoe UI", sans-serif; letter-spacing: 0; }
+.card-foot { margin: 7px 0 0; color: #9eacbf; font-size: calc(10px * var(--font-scale)); }
+.spectral-meta { display: flex; justify-content: space-between; margin: 10px 0 7px; color: #a7b4c6; font-size: calc(9px * var(--font-scale)); }
+.spectral-meta b { color: #f0d69e; font: 500 calc(10px * var(--font-scale)) "DM Mono", Consolas, monospace; }
+.spectral-bars { display: flex; height: 36px; align-items: flex-end; gap: 3px; }
+.spectral-bar { min-width: 2px; flex: 1; border-radius: 3px 3px 0 0; background: linear-gradient(180deg, #ecc88c, #bb9fd7 80%, #829ac8); opacity: .92; }
+
+.content-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(330px, .85fr); gap: 12px; margin-top: 12px; }
+.panel { padding: 16px; }
+.panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.range-chip { margin: 1px 0 0; font-size: calc(8px * var(--font-scale)); }
+.chart-legend { display: flex; align-items: center; gap: 7px; margin-top: 20px; color: #b0bdcf; font-size: calc(10px * var(--font-scale)); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; background: #8bdbe7; box-shadow: 0 0 0 3px rgba(139, 219, 231, .16); }
+.chart-unit { margin-left: auto; color: #a7b4c6; font: calc(10px * var(--font-scale)) "DM Mono", Consolas, monospace; }
+.chart-wrap { position: relative; height: 145px; margin-top: 7px; }
+.chart-wrap canvas { display: block; width: 100%; height: 100%; }
+.chart-empty { position: absolute; inset: 0; display: grid; place-items: center; color: #a2afc1; font-size: calc(11px * var(--font-scale)); pointer-events: none; }
+.recording-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border: 1px solid #46536a; border-radius: 999px; color: #b7c1d0; font: 500 calc(8px * var(--font-scale)) "DM Mono", Consolas, monospace; letter-spacing: .08em; white-space: nowrap; }
+.recording-chip i { width: 6px; height: 6px; border-radius: 50%; background: #aebaca; }
+.recording-chip.active { border-color: #85545d; background: #402e39; color: #ffc0c4; }
+.recording-chip.active i { background: #ff9ca7; box-shadow: 0 0 0 3px rgba(255, 156, 167, .15); animation: pulse 1.6s infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(255, 156, 167, 0); } }
+
+.run-panel form { margin-top: 18px; }
+.run-panel label { display: block; margin: 0 0 7px; color: #c1ccda; font-size: calc(10px * var(--font-scale)); font-weight: 700; }
+.run-panel input, .run-panel textarea {
+  width: 100%;
+  padding: 10px 11px;
+  border: 1px solid #43526a;
+  border-radius: 7px;
+  outline: none;
+  background: #192538;
+  color: #edf3fb;
+  font: calc(12px * var(--font-scale)) Manrope, "Segoe UI", sans-serif;
+  transition: border .15s, box-shadow .15s;
+}
+.run-panel input::placeholder, .run-panel textarea::placeholder { color: #8291a7; }
+.run-panel input:focus, .run-panel textarea:focus { border-color: #8bdbe7; box-shadow: 0 0 0 3px rgba(139, 219, 231, .13); }
+.run-panel input:disabled, .run-panel textarea:disabled { opacity: .62; }
+.run-panel textarea { min-height: 64px; resize: vertical; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+.input-suffix { position: relative; }
+.input-suffix input { padding-right: 58px; }
+.input-suffix span { position: absolute; top: 50%; right: 11px; transform: translateY(-50%); color: #9eacbf; font-size: calc(9px * var(--font-scale)); }
+.run-mode-box { padding: 8px 10px; border: 1px solid #43526a; border-radius: 7px; background: #2a3548; }
+.run-mode-box label { margin: 0 0 5px; color: #a6b3c5; font-size: calc(9px * var(--font-scale)); }
+.run-mode-box div { color: #f0d69e; font: 500 calc(10px * var(--font-scale)) "DM Mono", Consolas, monospace; }
+.optional { float: right; color: #a0adbd; font: 500 calc(8px * var(--font-scale)) "DM Mono", Consolas, monospace; letter-spacing: .08em; }
+.run-actions { display: flex; gap: 9px; margin-top: 14px; }
+.button { padding: 11px 13px; border: 0; border-radius: 7px; font: 700 calc(10px * var(--font-scale)) Manrope, "Segoe UI", sans-serif; cursor: pointer; transition: transform .12s, background .12s; }
+.button:active { transform: translateY(1px); }
+.button.primary { display: flex; flex: 1; align-items: center; justify-content: space-between; background: #8bdbe7; color: #14263a; }
+.button.primary:hover:not(:disabled) { background: #b0ebec; }
+.button.primary:disabled { opacity: .46; cursor: not-allowed; }
+.button.primary b { color: #245b78; font-size: calc(15px * var(--font-scale)); }
+.button.stop { border: 1px solid #89565f; background: #4a303b; color: #ffc1c6; }
+.button.stop:hover { background: #593743; }
+.form-hint { margin: 10px 0 0; color: #9ba9bb; font-size: calc(9px * var(--font-scale)); line-height: 1.5; }
+.active-run { display: flex; justify-content: space-between; margin-top: 15px; padding-top: 12px; border-top: 1px solid var(--line); color: #b0bdcf; font-size: calc(10px * var(--font-scale)); }
+.active-run strong { color: #e7eef8; }
+.monitor-summary { display: flex; flex-direction: column; align-items: flex-start; }
+.monitor-summary { min-height: 225px; }
+.monitor-summary h2, .workflow-panel h2 { margin: 0; color: #edf4fc; font-size: calc(17px * var(--font-scale)); letter-spacing: -.025em; }
+.monitor-summary > p:not(.eyebrow) { max-width: 340px; margin: 8px 0 0; color: #afbdcf; font-size: calc(11px * var(--font-scale)); line-height: 1.55; }
+.summary-divider { width: 100%; margin: 16px 0 8px; border-top: 1px solid #3b4960; }
+.summary-line { display: flex; justify-content: space-between; width: 100%; gap: 10px; padding: 7px 0; color: #a7b5c8; font-size: calc(10px * var(--font-scale)); }
+.summary-line strong { color: #e1ebf7; font: 500 calc(10px * var(--font-scale)) "DM Mono", Consolas, monospace; text-align: right; }
+.button.secondary { display: inline-flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: auto; border: 1px solid #53647a; background: #2b3a50; color: #d6e3f0; }
+.button.secondary:hover { border-color: #7999aa; background: #35475e; }
+.button.secondary b, .button.secondary span { color: #a5e6e8; font-size: calc(14px * var(--font-scale)); }
+.button.secondary.compact { margin: 0; padding: 8px 11px; font-size: calc(9px * var(--font-scale)); }
+.workflow-panel { padding: 22px; }
+.workflow-list { display: grid; gap: 14px; margin: 20px 0 16px; padding: 0; list-style: none; }
+.workflow-list li { display: grid; grid-template-columns: 29px 1fr; gap: 11px; align-items: start; }
+.workflow-list li > span { display: grid; width: 27px; height: 27px; place-items: center; border: 1px solid #536680; border-radius: 8px; background: #2a3a50; color: #a9e3e6; font: 500 calc(8px * var(--font-scale)) "DM Mono", Consolas, monospace; }
+.workflow-list strong { color: #e5edf7; font-size: calc(10px * var(--font-scale)); }
+.workflow-list p { margin: 4px 0 0; color: #aab9cb; font-size: calc(9px * var(--font-scale)); line-height: 1.55; }
+.data-source-note { display: flex; align-items: flex-start; gap: 9px; margin-top: auto; padding: 11px 12px; border: 1px solid #635843; border-radius: 8px; background: #39362f; }
+.data-source-note p { margin: 0; color: #e1cc9e; font-size: calc(9px * var(--font-scale)); line-height: 1.55; }
+.note-spark { color: #f0cc82; font-size: calc(13px * var(--font-scale)); }
+
+.runs-panel { margin-top: 15px; padding-bottom: 15px; }
+.tab-panel > .runs-panel { margin-top: 0; }
+.text-button { padding: 5px; border: 0; background: transparent; color: #91dce8; font: 700 calc(10px * var(--font-scale)) Manrope, "Segoe UI", sans-serif; cursor: pointer; }
+.text-button:hover { color: #c3f1f3; text-decoration: underline; }
+.table-scroll { overflow: auto; margin-top: 16px; }
+table { width: 100%; min-width: 600px; border-collapse: collapse; }
+thead th { padding: 9px 10px; border-bottom: 1px solid var(--line); color: #a9b6c8; font: 500 calc(8px * var(--font-scale)) "DM Mono", Consolas, monospace; letter-spacing: .1em; text-align: left; }
+tbody td { padding: 11px 10px; border-bottom: 1px solid #303d52; color: #bfcbda; font-size: calc(10px * var(--font-scale)); }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover td { background: rgba(153, 184, 218, .045); }
+tbody td:first-child { color: #edf3fb; font-weight: 700; }
+.table-empty { padding: 22px; color: #a1aec0; text-align: center; }
+.table-status { display: inline-flex; align-items: center; gap: 5px; color: #bdc8d6; font-size: calc(9px * var(--font-scale)); }
+.table-status.active { color: #ffc0c5; }
+.download-link { color: #9cdeeb; font-weight: 700; text-decoration: none; }
+.download-link:hover { color: #d1f2f5; text-decoration: underline; }
+.archive-note { margin: 9px 0 0; color: #9aa8ba; font-size: calc(9px * var(--font-scale)); }
+.page-footer { display: flex; justify-content: space-between; padding: 19px 2px 0; color: #8998ac; font: calc(9px * var(--font-scale)) "DM Mono", Consolas, monospace; letter-spacing: .06em; }
+
+@media (max-width: 1000px) {
+  .sensor-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .content-grid { grid-template-columns: 1fr; }
+  .chart-wrap { height: 220px; }
+}
+@media (max-width: 650px) {
+  .topbar { min-height: 76px; padding: 12px 16px; }
+  .header-tools { gap: 8px; flex-direction: column-reverse; align-items: flex-end; }
+  .font-size-control { gap: 5px; font-size: calc(8px * var(--font-scale)); }
+  .font-size-control select { padding: 5px 17px 5px 6px; max-width: 95px; font-size: calc(9px * var(--font-scale)); }
+  .brand-logo { width: 148px; }
+  .brand-lockup { gap: 11px; }
+  .brand-divider { height: 34px; }
+  .product-label span { font-size: calc(9px * var(--font-scale)); }
+  .product-label small, .connection-cluster small { display: none; }
+  .connection-cluster { gap: 7px; }
+  .connection-cluster strong { font-size: calc(10px * var(--font-scale)); }
+  .mode-chip { margin-left: 2px; padding: 6px 7px; }
+  .page-shell { padding: 27px 15px 20px; }
+  .intro-row { align-items: flex-start; flex-direction: column; margin-bottom: 27px; }
+  .intro-copy { max-width: 400px; line-height: 1.55; }
+  .board-pill { padding: 9px 12px; }
+  .section-heading { align-items: center; }
+  .tabbar { gap: 2px; overflow-x: auto; margin-bottom: 15px; }
+  .tab-button { gap: 6px; min-height: 38px; padding: 0 10px; font-size: calc(9px * var(--font-scale)); white-space: nowrap; }
+  .tabbar-updated { display: none; }
+  .tabbar-spacer { min-width: 0; }
+  .tab-badge { display: none; }
+  .monitor-summary { min-height: 220px; }
+  .section-note { max-width: 125px; text-align: right; }
+  .sensor-grid { gap: 9px; }
+  .sensor-card { min-height: 150px; padding: 14px 13px; }
+  .reading { font-size: calc(24px * var(--font-scale)); }
+  .unit { font-size: calc(9px * var(--font-scale)); }
+  .content-grid { margin-top: 11px; }
+  .panel { padding: 15px; }
+  .panel-heading h2 { font-size: calc(15px * var(--font-scale)); }
+  .form-row { gap: 8px; }
+  .page-footer { flex-direction: column; gap: 8px; }
+  .updated-label { font-size: calc(9px * var(--font-scale)); }
+}
