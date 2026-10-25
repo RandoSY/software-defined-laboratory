@@ -2,7 +2,7 @@
 
 # UNO Q Spirit · Instrumentation Verification Suite
 
-**Release:** `0.1.0` — engineering preview, 25 October 2026  
+**Release:** `0.1.1-prototype` — engineering preview, 25 October 2026  
 **Target:** Arduino UNO Q STM32U585 running Arduino's Zephyr-based Arduino core.  
 **Control plane:** Qualcomm Debian 13 + local Arduino RouterBridge, Python CLI.  
 **Provenance:** Adapted from the user's **Nugget 2-Wire Sensor Shield — KiCad Autorouting and Programmer's Guide**, v0.2x, pages 2, 4–6, plus the AVR Spirit UNO Q conversion prompt.  
@@ -23,6 +23,7 @@ Exercise the original AVR Spirit 2-Wire shield's sensor interfaces safely on a 3
 - `docs/PRODUCT_SPEC.md` — requirements, assumptions, acceptance and limitations.
 - `docs/PINS_AND_SAFETY.md` — historical documented pin contract, 3.3 V adaptation plan.
 - `docs/BUILD_AND_RUN.md` — Arduino setup, commands, Zephyr specifics, host CLI.
+- **[Two-sensor prototype-shield quickstart](docs/PROTOTYPE_SHIELD_QUICKSTART.md)** — start with DS18B20 + AS7343, no custom PCB.
 - `docs/TEST_PLAN.md` — electrical and functional acceptance protocol.
 - `docs/VALIDATION.md` — evidence of tests actually run.
 
@@ -38,7 +39,10 @@ Exercise the original AVR Spirit 2-Wire shield's sensor interfaces safely on a 3
 | HC-SR04 TRIG | D7 | D7_TRIG |
 | HC-SR04 ECHO | D8 | D8_ECHO |
 | **Active buzzer module** signal | D9 | D9_BUZZER |
-| I²C SDA / SCL | A4 / A5 | SDA / SCL |
+| Historic Spirit I²C SDA / SCL | A4 / A5 | SDA / SCL (original 5 V shield) |
+| **Current UNO Q sketch `Wire` SDA / SCL** | **D20 / D21** | **AS7343 prototype wiring** |
+
+**Important correction:** UNO Q default `Wire` uses **D20/D21**, NOT historical A4/A5. This sketch's AS7343 must connect to D20/D21; newer `Wire2` can serve A4/A5 only with a deliberate firmware change. See the [prototype quickstart](docs/PROTOTYPE_SHIELD_QUICKSTART.md).
 
 These are **logical mappings from the historical PDF**, not a claim that the 5-V original physical board has been converted. **The original PDF explicitly states HC-SR04 ECHO is unshifted 5 V; it is unsafe to mate the original board directly until adapted.**
 
@@ -71,7 +75,7 @@ python python/spirit_cli.py shell
 python python/spirit_cli.py capture --count 100 --period 1 --output measurements.csv
 ```
 
-CLI command examples: `mode synthetic`, `mode live`, `gain 6` (64x), `interval 1000`, `tare`, `cal grams 100`, `start`, `stop`, `reset-stats` (where `cal grams` is available in the interactive shell). The host CLI never needs elevated privileges but does need permission to access the local router socket.
+CLI command examples: `profile prototype` (DS18B20 + AS7343), `profile all`, `mode synthetic`, `mode live`, `gain 6` (64x), `interval 1000`, `tare`, `cal grams 100`, `start`, `stop`, `reset-stats` (where `cal grams` is available in the interactive shell). The host CLI never needs elevated privileges but does need permission to access the local router socket.
 
 ## Original vs proposed changes
 
