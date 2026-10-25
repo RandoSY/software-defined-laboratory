@@ -20,6 +20,7 @@ Exercise the original AVR Spirit 2-Wire shield's sensor interfaces safely on a 3
 - `UNO_Q_Spirit/filters.h` — pure C++ algorithms and numeric guards.
 - `python/spirit_cli.py` — Debian CLI, local mock mode and CSV export.
 - `python/dashboard_server.py` + `dashboard/` — LAN experiment dashboard, SQLite run archive and per-run CSV export; setup in [`docs/DASHBOARD.md`](docs/DASHBOARD.md).
+- [Project handoff for the originating ChatGPT thread](docs/CHATGPT_THREAD_HANDOFF.txt) — current status, publications, boot service, limitations, and next steps.
 - **[Software-Defined STEM Laboratory — Policy & Design Paper (PDF)](docs/SOFTWARE_DEFINED_STEM_LAB_POLICY_AND_DESIGN.pdf)** — strategic architecture, CORE 10 / historical Core 12 exemplars, safety and governance policy, and a staged roadmap; editable [Markdown source](docs/SOFTWARE_DEFINED_STEM_LAB_POLICY_AND_DESIGN.md).
 - **[User's & Programmer's Guide (PDF)](docs/USER_AND_PROGRAMMERS_GUIDE.pdf)** — branded field guide to operating the system, understanding the code, and its software-defined laboratory roadmap; editable [Markdown source](docs/USER_AND_PROGRAMMERS_GUIDE.md).
 - `tests/test_spirit_cli.py`, `tests/cpp/` and `tests/stubs/` — desktop tests and mock Arduino/Zephyr compile harness.
