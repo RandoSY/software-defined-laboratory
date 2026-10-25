@@ -27,6 +27,7 @@ Exercise the original AVR Spirit 2-Wire shield's sensor interfaces safely on a 3
 - **`docs/PROTOTYPE_SHIELD_QUICKSTART.md` — start here: two sensors on an empty prototype shield (no Spirit PCB needed).**
 - **[Spectral sensor selection and fidelity](docs/SPECTRAL_SELECTION.md)** — AS7343 first target; compare with newer TCS3448 before sensor procurement.
 - **[Standalone AS7343 Qwiic test](examples/as7343-qwiic-test/README.md)** — test the spectrometer directly on UNO Q without Spirit shield hardware.
+- [`docs/CODE_REVIEW_GUIDE.md`](docs/CODE_REVIEW_GUIDE.md) — source map, data path, contracts and test boundaries.
 - `docs/TEST_PLAN.md` — electrical and functional acceptance protocol.
 - `docs/VALIDATION.md` — evidence of tests actually run.
 
