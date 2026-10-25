@@ -37,7 +37,7 @@ https://github.com/RandoSY/software-defined-laboratory/blob/main/platforms/uno-q
 Dashboard operations and persistence documentation:
 https://github.com/RandoSY/software-defined-laboratory/blob/main/platforms/uno-q-spirit/docs/DASHBOARD.md
 
-Latest confirmed GitHub commit at handoff time:
+Dashboard boot-service documentation commit (immediately before publishing this handoff):
 https://github.com/RandoSY/software-defined-laboratory/commit/bb56f85e3cc3dbbf67900627a0803e4ba4d4681b
 
 DASHBOARD AND BOOT PERSISTENCE
