@@ -16,6 +16,8 @@
 | A5/D19 | SCL | PC0, I2C3 | 3.3 V I²C SCL and pull-ups |
 | 3V3/GND | Previously +5V/GND | — | Power from protected 3.3 V sensor rail; current budget |
 
+**Current UNO Q Arduino sketch bus clarification:** `Wire` is on **D20 (PB11, SDA) / D21 (PB10, SCL)**; original Spirit A4 (PC1) / A5 (PC0) is a *different* I²C3-capable pin pair, not `Wire`. The AS7343 prototype must be wired to D20/D21 unless using a tested alternate bus (`Wire2` in updated cores or `Wire1` via Qwiic). See [two-sensor prototype quickstart](PROTOTYPE_SHIELD_QUICKSTART.md).
+
 Arduino's full pinout: https://docs.arduino.cc/resources/pinouts/ABX00162-full-pinout.pdf. **Verify** physical pin descriptions and `Wire` defaults against the installed Arduino UNO Q core prior to wiring.
 
 ## Stop/no-go conditions
