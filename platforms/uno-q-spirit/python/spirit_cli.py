@@ -18,11 +18,14 @@ RPC_STATUS = "spirit.status"
 RPC_COMMAND = "spirit.command"
 FIELDS = ("timestamp_utc", "mode", "temp_state", "temp_c", "hx_state", "hx_counts", "hx_grams", "ultrasonic_state", "distance_cm", "spectral_state", "spectrum_18", "loop_ticks")
 
+# Both the standalone CLI and dashboard use these exact RPC names. Keep them
+# synchronized with Bridge.provide_safe() in UNO_Q_Spirit.ino.
 class Transport(Protocol):
     def call(self, method: str, *args: Any, timeout: float = 5) -> str: ...
 
 
 class LocalBridge:
+    """Short-lived connection to the board-local Router Bridge socket."""
     def __init__(self) -> None:
         self.bridge = None
 
@@ -47,7 +50,7 @@ class LocalBridge:
 
 
 class MockBridge:
-    """Host-only deterministic simulator; NOT proof of working embedded firmware."""
+    """Synthetic host transport for CLI development; it does not emulate hardware."""
     def __init__(self) -> None:
         self.mode = "synthetic"
         self.running = True
@@ -97,9 +100,9 @@ class MockBridge:
         t = self.index * 0.15
         state = "SYNTH" if self.mode == "synthetic" else "MISSING"
         def sensor(val: float | None, enabled: bool = True) -> dict:
-            sensor_state = state if enabled or self.mode == "synthetic" else "DISABLED"
-            return {"state": sensor_state, "value": val if sensor_state == "SYNTH" else None,
-                    "ok_count": self.index if sensor_state == "SYNTH" else 0, "error_count": 0}
+            actual_state = state if enabled or self.mode == "synthetic" else "DISABLED"
+            return {"state": actual_state, "value": val if actual_state == "SYNTH" else None,
+                    "ok_count": self.index if actual_state == "SYNTH" else 0, "error_count": 0}
         return json.dumps({"schema": 1, "mode": self.mode, "profile": self.profile, "run": self.running,
             "uptime_ms": int(t * 1000), "interval_ms": self.interval, "bridge_ok": True,
             "temp_c": sensor(round(22 + 2 * math.sin(t), 3) if self.mode == "synthetic" else None),
@@ -127,6 +130,7 @@ def request(client: Transport, command: str) -> dict:
 
 
 def sample(client: Transport) -> dict:
+    """Fetch one schema-1 telemetry payload and reject incomplete spectra."""
     data = decode(client.call(RPC_STATUS, timeout=5))
     if data.get("schema") != 1:
         raise ValueError("Unsupported telemetry schema version")
@@ -140,6 +144,7 @@ def sample(client: Transport) -> dict:
 
 
 def flatten(data: dict) -> dict:
+    """Convert nested Bridge JSON into one row matching the CLI CSV header."""
     return {
         "timestamp_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "mode": data["mode"],
@@ -178,6 +183,8 @@ def execute(client: Transport, args: argparse.Namespace) -> int:
     if args.action == "status":
         print(json.dumps(sample(client), indent=2));return 0
     if args.action == "capture":
+        # Keep one row for every requested time slot after Bridge failures; the
+        # explicit ERROR mode marks gaps for downstream analysis.
         path = Path(args.output)
         if args.count < 1 or args.count > 100000: raise ValueError("count must be 1..100000")
         if not 0.1 <= args.period <= 60: raise ValueError("period must be 0.1..60 seconds")
