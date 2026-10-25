@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""UNO Q Spirit local experiment dashboard and recorder."""
+"""UNO Q Spirit local dashboard: Bridge polling, experiment storage, and HTTP UI.
+
+The MCU remains the source of sensor measurements. This process samples its
+``spirit.status`` RPC, serves read-only telemetry to the browser, and stores
+independent Linux-side experiment runs in SQLite. It never changes MCU mode.
+"""
 from __future__ import annotations
 
 import csv
@@ -23,6 +28,8 @@ ROOT = Path(__file__).resolve().parents[1]
 WEB_ROOT = ROOT / "dashboard"
 DATA_ROOT = Path(os.environ.get("SPIRIT_DATA_DIR", Path.home() / ".local/share/uno-q-spirit"))
 DB_PATH = DATA_ROOT / "experiments.sqlite3"
+# The UI refreshes quickly; experiment recording has its own user-selected
+# interval and records snapshots from this poll loop.
 POLL_SECONDS = 1.0
 CSV_COLUMNS = (
     "sample_number", "timestamp_utc", "mode", "profile",
@@ -37,6 +44,8 @@ def utc_now() -> str:
 
 
 class DashboardService:
+    """Own the Router Bridge sampler and the durable experiment archive."""
+
     def __init__(self) -> None:
         DATA_ROOT.mkdir(parents=True, exist_ok=True)
         self._init_db()
@@ -56,6 +65,7 @@ class DashboardService:
         return db
 
     def _init_db(self) -> None:
+        """Create the archive tables if this is the first dashboard launch."""
         with closing(self._connect_db()) as db:
             db.executescript("""
                 PRAGMA journal_mode=WAL;
@@ -79,6 +89,12 @@ class DashboardService:
             db.commit()
 
     def _sampling_loop(self) -> None:
+        """Reconnect after router failures while keeping the HTTP service alive.
+
+        ``latest`` is only the newest MCU snapshot. A separate database insert
+        happens while a run is active, at ``record_interval`` rather than every
+        one-second dashboard poll.
+        """
         while not self.stop_event.is_set():
             try:
                 with LocalBridge() as client:
@@ -134,6 +150,7 @@ class DashboardService:
         return dict(row) if row else None
 
     def start_run(self, body: dict[str, Any]) -> dict[str, Any]:
+        """Validate operator metadata and start a Linux-side recording run."""
         name = str(body.get("name", "")).strip()
         notes = str(body.get("notes", "")).strip()
         try:
@@ -166,6 +183,7 @@ class DashboardService:
         return self._get_run(run_id) or {}
 
     def stop_run(self) -> dict[str, Any]:
+        """Close the active archive run; the MCU acquisition keeps running."""
         with self.lock:
             run_id = self.run_id
             if run_id is None:
@@ -185,6 +203,7 @@ class DashboardService:
         return [dict(row) for row in rows]
 
     def run_csv(self, run_id: str) -> tuple[str, str] | None:
+        """Flatten saved telemetry into a review-friendly, spreadsheet CSV."""
         with closing(self._connect_db()) as db:
             run = db.execute("SELECT * FROM runs WHERE run_id = ?", (run_id,)).fetchone()
             rows = db.execute("SELECT timestamp_utc, payload_json FROM samples WHERE run_id = ? ORDER BY sample_id", (run_id,)).fetchall()
@@ -223,6 +242,7 @@ SERVICE = DashboardService()
 
 
 class Handler(BaseHTTPRequestHandler):
+    """Small standard-library HTTP API and static-file server for the LAN UI."""
     server_version = "UNO-Q-Spirit-Dashboard/1.0"
 
     def _send(self, status: int, content: bytes, content_type: str, extra: dict[str, str] | None = None) -> None:
@@ -251,6 +271,9 @@ class Handler(BaseHTTPRequestHandler):
         return value
 
     def do_GET(self) -> None:
+        # API routes are explicit. Static paths are resolved and confined to
+        # dashboard/ (or the single branded SVG under assets/) to prevent path
+        # traversal from exposing unrelated files on the board.
         path = unquote(urlparse(self.path).path)
         if path == "/api/state":
             self._json(200, SERVICE.state())
@@ -286,6 +309,8 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, target.read_bytes(), content_type)
 
     def do_POST(self) -> None:
+        # The browser can create or stop an archive run; sensor configuration
+        # and MCU commands are intentionally outside this HTTP API.
         path = urlparse(self.path).path
         try:
             body = self._body_json()
