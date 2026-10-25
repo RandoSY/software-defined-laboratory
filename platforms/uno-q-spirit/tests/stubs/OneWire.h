@@ -1,4 +1,6 @@
 #pragma once
+// Absent-sensor fixture for the firmware simulation; no electrical timing or
+// DS18B20 protocol behavior is emulated here.
 #include "Arduino.h"
 class OneWire {
 public:
