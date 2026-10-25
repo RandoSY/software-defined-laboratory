@@ -1,0 +1,67 @@
+HANDOFF UPDATE FOR THE ORIGINAL CHATGPT THREAD
+Project: UNO Q Spirit / Software-Defined Laboratory
+Prepared: 2026-10-25
+
+PURPOSE
+This is a paste-ready status update for the ChatGPT thread that originally worked on this project. It summarizes the implementation and documents, what is running now, what is still unverified, and the next useful actions.
+
+PROJECT AND ARCHITECTURE
+UNO Q Spirit is an engineering-preview instrument and a reference implementation for the broader Software-Defined Laboratory (SDL). The architecture separates physical sensor acquisition on the UNO Q STM32U585 MCU from Linux-side experiment logic, operator interface, archive, and analysis. Router Bridge carries status and commands between those sides. The wider SDL direction is a set of replaceable endpoints and reusable instruments serving versioned experiments, rather than a lab tied to one board.
+
+WORK COMPLETED
+- Reviewed UNO Q Spirit source and related dashboard, CLI, product specification, safety, build, test, and validation documentation.
+- Built the branded browser dashboard with Monitor, Experiments, and Archive tabs; dark colors with pastel accents; adjustable font size; operator feedback; telemetry display; experiment recording; SQLite archive; and CSV download.
+- Documented the exact division between MCU acquisition and Linux dashboard behavior. Dashboard Start/Stop controls manage Linux-side recording; they do not start or stop MCU acquisition or switch firmware sensor mode.
+- Added a standalone AS7343 bring-up path that can use a STEMMA QT/Qwiic breakout or supported header wiring without requiring the Spirit shield. STEMMA/Qwiic remains an optional sensor connection, with bus and electrical compatibility dependent on the specific hardware.
+- Clearly identified synthetic and mock data as simulated, not physical measurements.
+- Created the branded 8-page User's & Programmer's Guide (PDF and editable Markdown).
+- Created the 16-page “From Instruments to Investigations” Software-Defined STEM Laboratory policy/design paper (PDF and editable Markdown). It uses historical Core 12 lineage and the current canonical CORE 10 exemplars: Kitchen Inquiry Lab / microwave-water heating, One Cup Chemistry, and NOTHING IS FREE / Personal Energy Laboratory. It covers modular architecture, record provenance, safety and permission policy, bounded autonomy, governance, and a staged roadmap.
+- Added both publications to the UNO Q Spirit README.
+- Configured dashboard boot persistence on the UNO Q; details below.
+
+GITHUB PUBLICATIONS
+Repository: https://github.com/RandoSY/software-defined-laboratory/tree/main/platforms/uno-q-spirit
+
+User's & Programmer's Guide PDF:
+https://github.com/RandoSY/software-defined-laboratory/blob/main/platforms/uno-q-spirit/docs/USER_AND_PROGRAMMERS_GUIDE.pdf
+
+Editable guide source:
+https://github.com/RandoSY/software-defined-laboratory/blob/main/platforms/uno-q-spirit/docs/USER_AND_PROGRAMMERS_GUIDE.md
+
+SDL policy/design paper PDF:
+https://github.com/RandoSY/software-defined-laboratory/blob/main/platforms/uno-q-spirit/docs/SOFTWARE_DEFINED_STEM_LAB_POLICY_AND_DESIGN.pdf
+
+Editable policy/design source:
+https://github.com/RandoSY/software-defined-laboratory/blob/main/platforms/uno-q-spirit/docs/SOFTWARE_DEFINED_STEM_LAB_POLICY_AND_DESIGN.md
+
+Dashboard operations and persistence documentation:
+https://github.com/RandoSY/software-defined-laboratory/blob/main/platforms/uno-q-spirit/docs/DASHBOARD.md
+
+Latest confirmed GitHub commit at handoff time:
+https://github.com/RandoSY/software-defined-laboratory/commit/bb56f85e3cc3dbbf67900627a0803e4ba4d4681b
+
+DASHBOARD AND BOOT PERSISTENCE
+The dashboard is available at http://192.168.0.165:7000. Health check returned {"ok":true,"bridge_ok":true}, HTTP 200.
+
+Installed `/etc/systemd/system/uno-q-spirit-dashboard.service` and enabled it under `multi-user.target`. It runs as user `arduino`, has supplementary group `arduino-router`, starts after network-online and Arduino Router, binds to 0.0.0.0:7000, and uses `Restart=on-failure` with a 3-second delay. Service name: `uno-q-spirit-dashboard.service`; current process was PID 9858 when checked. Arduino Router and Arduino App CLI daemon were already enabled and active. No Arduino App itself was listed as running by `arduino-app-cli app ps --all`.
+
+Service management:
+  sudo systemctl status uno-q-spirit-dashboard.service
+  sudo systemctl restart uno-q-spirit-dashboard.service
+  sudo journalctl -u uno-q-spirit-dashboard.service -f
+  curl http://127.0.0.1:7000/healthz
+
+The dashboard unit and management commands are documented in `docs/DASHBOARD.md`. Boot auto-start is enabled; the board was not rebooted after installing the unit, so a full reboot has not been observed. The process was confirmed active and the dashboard and Bridge health endpoints returned HTTP 200 after installation.
+
+LIMITATIONS AND SAFETY
+- Dashboard is plain HTTP with no login; keep it on a trusted network.
+- The original 5 V Spirit shield is not electrically qualified for UNO Q. Do not connect it directly; audit/modify the 5 V rails and signals, especially the ultrasonic ECHO line.
+- Synthetic telemetry, host tests, source review, or compilation do not establish live sensor accuracy, calibration, or electrical safety.
+- The AS7343 raw output slots are not calibrated wavelength/radiometric values; HX711 counts are not mass without calibration.
+- Dashboard records telemetry; the complete autonomous laboratory described in the policy paper remains a proposal/roadmap. Physical actions need apparatus-specific risk review, local limits, human authorization, and tested abort behavior.
+
+NEXT STEPS
+1. After a convenient board reboot, confirm `uno-q-spirit-dashboard.service` is active and check `http://192.168.0.165:7000/healthz`.
+2. Electrically qualify an adapted sensor interface before using the inherited shield.
+3. Bench-test the sensor channels one at a time; record real repeatability, calibration, fault response, and CSV evidence.
+4. Use a small physical curriculum experiment to validate a common experiment manifest and data schema, then add bounded guided automation with human approvals.
