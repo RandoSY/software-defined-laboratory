@@ -86,4 +86,4 @@ Open **http://192.168.0.165:7000** in Chrome on the same LAN. The dashboard poll
 
 ## Standalone spectrometer test over Qwiic
 
-To bring up only an Adafruit AS7343 breakout, use [`examples/as7343-qwiic-test/`](../examples/as7343-qwiic-test/README.md). It connects the breakout by STEMMA QT/Qwiic cable to the UNO Q's onboard 3.3 V Qwiic socket and initializes `Wire1`; it does not require the Spirit shield, other sensors, or Router Bridge. The main Spirit sketch uses `Wire` on D20/D21 and is not configured for Qwiic by default. Follow the example's compile/upload and Serial Monitor steps.
+To bring up only an Adafruit AS7343 breakout, use [`examples/as7343-qwiic-test/`](../examples/as7343-qwiic-test/README.md). It supports either the UNO Q's onboard 3.3 V Qwiic socket (`Wire1`) or the D20/D21 header (`Wire`), detecting the sensor automatically; it does not require the Spirit shield, other sensors, or Router Bridge. The main Spirit sketch uses `Wire` on D20/D21 and is not configured for Qwiic by default. Follow the example's compile/upload and Serial Monitor steps.
