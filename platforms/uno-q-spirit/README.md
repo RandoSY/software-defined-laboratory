@@ -20,6 +20,7 @@ Exercise the original AVR Spirit 2-Wire shield's sensor interfaces safely on a 3
 - `UNO_Q_Spirit/filters.h` — pure C++ algorithms and numeric guards.
 - `python/spirit_cli.py` — Debian CLI, local mock mode and CSV export.
 - `python/dashboard_server.py` + `dashboard/` — LAN experiment dashboard, SQLite run archive and per-run CSV export; setup in [`docs/DASHBOARD.md`](docs/DASHBOARD.md).
+- **[User's & Programmer's Guide (PDF)](docs/USER_AND_PROGRAMMERS_GUIDE.pdf)** — branded field guide to operating the system, understanding the code, and its software-defined laboratory roadmap; editable [Markdown source](docs/USER_AND_PROGRAMMERS_GUIDE.md).
 - `tests/test_spirit_cli.py`, `tests/cpp/` and `tests/stubs/` — desktop tests and mock Arduino/Zephyr compile harness.
 - `docs/PRODUCT_SPEC.md` — requirements, assumptions, acceptance and limitations.
 - `docs/PINS_AND_SAFETY.md` — historical documented pin contract, 3.3 V adaptation plan.
