@@ -1,10 +1,14 @@
 # Engineering Product Specification — UNO Q Spirit Instrument Verification
 
-**Document:** UQS-SPEC-001  |  **Release:** 0.1.0  |  **Date:** 2026-10-25  |  **Status:** Engineering preview, not hardware released
+**Document:** UQS-SPEC-001  |  **Release:** 0.1.1-prototype  |  **Date:** 2026-10-25  |  **Status:** Engineering preview, not hardware released
 
 ## Product mission
 
 UNO Q Spirit is an STM32U585-based educational lab card validation platform that samples ultrasonic distance, force/weight, temperature and multispectral light. The Arduino sketch is the safety-critical acquisition endpoint; Qualcomm Linux is an OPTIONAL command/data consumer, not necessary for continuing sensor acquisition after initial firmware initialization. The project is an advanced optional instrument within the Software-Defined Laboratory ecosystem.
+
+## Two-sensor prototype configuration
+
+For initial validation on an ordinary unpopulated Arduino prototype shield, `profile prototype` limits live acquisition to **DS18B20 D2** and **AS7343 on UNO Q `Wire` D20/D21**. HX711 and ultrasonic report `DISABLED` and are not polled. `profile all` restores four-sensor acquisition. This is tested in the desktop simulation, **not yet validated on UNO Q hardware**. See [prototype quickstart](PROTOTYPE_SHIELD_QUICKSTART.md).
 
 ## Operational modes
 
@@ -20,7 +24,7 @@ UNO Q Spirit is an STM32U585-based educational lab card validation platform that
 
 | ID | Normative requirement | Acceptance evidence | Current status |
 |---|---|---|---|
-| FR-01 | Use historic D2–D9 and A4/A5 logical signals; no invented alternate wiring | PDF audit & pin contract | Documented; native PCB unverified |
+| FR-01 | Preserve historic D2–D9 pins; clearly distinguish historic A4/A5 I²C from current UNO Q `Wire` D20/D21 | PDF audit & pin contract | Documented; native PCB unverified |
 | FR-02 | Handle missing/failed sensors without exceptions, infinite waits or acquisition halt | Absent-sensor simulator & bench disconnections | Mock passed; hardware pending |
 | FR-03 | Produce variable synthetic data for all four sensor families without any connected sensor | Python and C++ harness | Passed |
 | FR-04 | DS18B20 temperature via 1-Wire, ROM/scratchpad CRC, asynchronous 12-bit conversion | Oscilloscope + controlled-temp comparison | Code present; hardware pending |
