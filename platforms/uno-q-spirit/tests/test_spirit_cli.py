@@ -29,6 +29,20 @@ class TestCLI(unittest.TestCase):
         m=cli.MockBridge();cli.request(m,'mode live')
         d=cli.sample(m);self.assertEqual(d['temp_c']['state'],'MISSING')
         self.assertIsNone(d['temp_c']['value'])
+    def test_prototype_profile_marks_unused_sensors_disabled(self):
+        m=cli.MockBridge()
+        self.assertTrue(cli.request(m, 'profile prototype')['ok'])
+        cli.request(m,'mode live')
+        d=cli.sample(m)
+        self.assertEqual(d['profile'], 'prototype')
+        self.assertEqual(d['temp_c']['state'], 'MISSING')
+        self.assertEqual(d['spectral']['state'], 'MISSING')
+        self.assertEqual(d['hx711_counts']['state'], 'DISABLED')
+        self.assertEqual(d['distance_cm']['state'], 'DISABLED')
+        self.assertIsNone(d['distance_cm']['value'])
+        cli.request(m, 'profile all')
+        self.assertEqual(cli.sample(m)['hx711_counts']['state'],'MISSING')
+
     def test_bad_gain(self):
         with self.assertRaises(ValueError): cli.request(cli.MockBridge(),'gain 13')
     def test_invalid_response(self):
