@@ -1,5 +1,7 @@
 # Install, run and command the UNO Q Spirit firmware
 
+For the full operator and developer overview, see the [User's & Programmer's Guide](USER_AND_PROGRAMMERS_GUIDE.pdf) and its [editable Markdown source](USER_AND_PROGRAMMERS_GUIDE.md).
+
 **First hardware attempt?** Follow the [two-sensor prototype-shield quickstart](PROTOTYPE_SHIELD_QUICKSTART.md) and use `profile prototype` **before** `mode live`.
 
 The sketch uses UNO Q `Wire` on **D20/D21**; historical Spirit A4/A5 is **not** the default `Wire` bus.
