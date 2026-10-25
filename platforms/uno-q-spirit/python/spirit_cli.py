@@ -157,7 +157,7 @@ def flatten(data: dict) -> dict:
 
 
 def execute(client: Transport, args: argparse.Namespace) -> int:
-    if args.action in ("mode", "gain", "interval"):
+    if args.action in ("mode", "profile", "gain", "interval"):
         cmd = f"{args.action} {args.value}"
         print(json.dumps(request(client, cmd), indent=2)); return 0
     if args.action == "cal":
@@ -205,6 +205,7 @@ def build_parser() -> argparse.ArgumentParser:
     for name in ("status", "start", "stop", "tare", "reset-stats", "shell"):
         subs.add_parser(name)
     mode = subs.add_parser("mode"); mode.add_argument("value", choices=["synthetic", "live"])
+    profile = subs.add_parser("profile"); profile.add_argument("value", choices=["prototype", "all"])
     gain = subs.add_parser("gain"); gain.add_argument("value", type=int, choices=range(13))
     interval = subs.add_parser("interval"); interval.add_argument("value", type=int)
     cal = subs.add_parser("cal"); cal.add_argument("grams", type=float)
