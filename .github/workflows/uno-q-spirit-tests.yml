@@ -1,0 +1,26 @@
+name: UNO Q Spirit software checks
+on:
+  push:
+    paths:
+      - 'platforms/uno-q-spirit/**'
+  pull_request:
+    paths:
+      - 'platforms/uno-q-spirit/**'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Python unit tests
+        run: python3 -m unittest discover -s platforms/uno-q-spirit/tests -v
+      - name: Pure C++ filter tests
+        run: |
+          c++ -std=c++17 -Wall -Wextra -Werror platforms/uno-q-spirit/tests/cpp/test_filters.cpp -o /tmp/spirit_filters
+          /tmp/spirit_filters
+      - name: Arduino sketch host-mock compile and test
+        run: |
+          c++ -std=c++17 -Wall -Wextra -Werror -Iplatforms/uno-q-spirit/tests/stubs -x c++ platforms/uno-q-spirit/tests/cpp/test_sketch.cpp -o /tmp/spirit_sketch
+          /tmp/spirit_sketch
