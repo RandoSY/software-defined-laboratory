@@ -127,3 +127,7 @@ The full standard is in [docs/REPOSITORY_STANDARD.md](docs/REPOSITORY_STANDARD.m
 **Estate readiness:** `USABLE BUT INCOMPLETE`
 
 The software and compile-verification infrastructure for the first vertical slice is now present. Promotion to `READY` is intentionally withheld until the documented physical sensor path is run and recorded.
+
+## UNO Q Spirit instrumentation platform
+
+**Engineering preview · STM32U585 + Qualcomm Debian 13.** The [UNO Q Spirit verification suite](platforms/uno-q-spirit/README.md) adapts the historically documented Nugget/AVR Spirit sensor pin contract to an Arduino Zephyr-based STM32 acquisition design, with an Adafruit AS7343 spectral channel, HX711, DS18B20, ultrasonic ranging, synthetic mode, Python Bridge CLI, and fault-isolation software tests. The [product specification](platforms/uno-q-spirit/docs/PRODUCT_SPEC.md) and [validation evidence](platforms/uno-q-spirit/docs/VALIDATION.md) distinguish host-software tests from **pending actual UNO Q compilation, shield electrical modification, and physical sensor acceptance**. **Do not connect the original 5 V shield directly to the UNO Q.**
