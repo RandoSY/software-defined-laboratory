@@ -3,6 +3,11 @@
 // D2-D9 from historical Nugget 2-Wire Sensor Shield v0.2x.
 // UNO Q Wire uses D20=SDA/D21=SCL, unlike historical A4/A5 I2C.
 // DO NOT MATE A 5V AVR SPIRIT PCB TO UNO Q without electrical adaptation.
+//
+// Review map: the MCU owns sampling and sensor state; Python calls the two
+// Bridge RPCs near the end of this file. Startup stays synthetic. `profile
+// prototype` omits HX711/ultrasonic polling, but still means DS18B20 + AS7343.
+// The Qwiic connector is Wire1 and is covered by a separate standalone example.
 #include <Arduino.h>
 #include <Wire.h>
 #include <OneWire.h>
@@ -21,7 +26,7 @@ constexpr uint32_t ECHO_TIMEOUT_US=30000;
 OneWire oneWire(PIN_DS18);
 Adafruit_AS7343 as7343;
 bool live=false, acquiring=true, spectrumFound=false, dsFound=false;
-bool prototypeProfile=false; // Live: DS18B20 + AS7343 only; other acquisition disabled.
+bool prototypeProfile=false; // Live mode: only DS18B20 and AS7343. HX711/ultrasonic disabled.
 volatile bool bridgeOk=false;
 bool temperatureRequested=false, haveTemperature=false;
 uint8_t dsAddr[8]={0};
@@ -33,8 +38,8 @@ uint32_t syntheticCounter=0;
 uint32_t lastHXok=0;
 float tempC=22.0f, distanceCm=50.0f, hxGrams=NAN;
 int32_t hxRaw=0, hxOffset=0;
-float hxScale=0.0f; // raw counts per gram; 0 means NOT CALIBRATED
-uint16_t spectrum[18]={0};
+float hxScale=0.0f; // raw counts per gram; 0 means NOT CALIBRATED (RAM only)
+uint16_t spectrum[18]={0}; // AS7343 driver slots: raw counts, not calibrated bands
 uint8_t spectralGain=6; // AS7343_GAIN_64X
 const char *tempState="DISABLED", *hxState="DISABLED", *usState="DISABLED", *specState="DISABLED";
 spirit::RunningStat hxStats, usStats, jitterStats;
@@ -179,6 +184,7 @@ void updateSpectral() {
   successSpec++;
 }
 
+// Simulation for CLI/dashboard bring-up; these are never sensor measurements.
 void synthTick(uint32_t now) {
   const float phase=(now-uptimeStart)*0.001f;
   tempC=22.0f+2.5f*sinf(phase*0.12f);
@@ -200,6 +206,8 @@ String sensorJSON(const char* state, double value, uint32_t passed, uint32_t fai
   out+=",\"ok_count\":"+String(passed)+",\"error_count\":"+String(failed)+"}";
   return out;
 }
+// Public telemetry contract: keep schema and nested keys in sync with the
+// Python CLI, dashboard server, and browser UI.
 String statusJSON() {
   String s="{\"schema\":1,\"mode\":"+quote(live?"live":"synthetic")+
     ",\"run\":"+String(acquiring?"true":"false")+
@@ -226,6 +234,7 @@ String statusJSON() {
   return s;
 }
 
+// Public command contract; invalid values/preconditions return JSON errors.
 String command(String cmd) {
   cmd.trim();
   if(cmd=="help")return "{\"ok\":true,\"commands\":[\"mode synthetic\",\"mode live\",\"profile prototype\",\"profile all\",\"start\",\"stop\",\"tare\",\"gain 0..12\",\"interval 100..10000\",\"reset-stats\",\"cal grams <known mass>\"]}";
@@ -233,7 +242,7 @@ String command(String cmd) {
   if(cmd=="mode live") {setMode(true);return "{\"ok\":true,\"mode\":\"live\"}";}
   if(cmd=="profile prototype" || cmd=="profile all") {
     prototypeProfile=(cmd=="profile prototype");
-    setMode(live); // clear stale data on configuration change
+    setMode(live); // drop stale measurements/weights on a profile switch
     return prototypeProfile?"{\"ok\":true,\"profile\":\"prototype\"}":"{\"ok\":true,\"profile\":\"all\"}";
   }
   if(cmd=="start") {acquiring=true;return "{\"ok\":true}";}
@@ -249,6 +258,7 @@ String command(String cmd) {
     if(!isfinite(mass)||mass<1.0f||mass>100000.0f||!live||strcmp(hxState,"OK")!=0||hxStats.n<3||labs(hxRaw-hxOffset)<100) {
       return "{\"ok\":false,\"error\":\"calibration_precondition\"}";
     }
+    // Preserve scale polarity: it depends on the load-cell wiring direction.
     hxScale=(hxRaw-hxOffset)/mass;
     return "{\"ok\":true,\"units\":\"g\",\"persistence\":\"ram_only\"}";
   }
@@ -284,6 +294,8 @@ void handleButtons(uint32_t now) {
 K_THREAD_STACK_DEFINE(spiritBridgeStack, 8192);
 static struct k_thread bridgeThreadData;
 void bridgeThreadMain(void*, void*, void*) {
+  // Start Bridge independently so a missing Linux Router cannot stall the MCU
+  // acquisition loop or prevent safe synthetic-mode boot.
   if (!Bridge.begin()) return;
   bool statusRegistered=Bridge.provide_safe("spirit.status", statusJSON);
   bool commandRegistered=Bridge.provide_safe("spirit.command", command);
@@ -295,7 +307,7 @@ void setup() {
   pinMode(PIN_TRIG,OUTPUT);digitalWrite(PIN_TRIG,LOW);
   pinMode(PIN_ECHO,INPUT);
   pinMode(PIN_HX_SCK,OUTPUT);digitalWrite(PIN_HX_SCK,LOW);
-  pinMode(PIN_HX_DOUT,INPUT_PULLUP); // no floating DOUT with disconnected HX711
+  pinMode(PIN_HX_DOUT,INPUT_PULLUP); // no floating DOUT when HX711 is absent
   pinMode(PIN_START,INPUT_PULLUP);pinMode(PIN_TARE,INPUT_PULLUP);
   pinMode(PIN_BUZZER,OUTPUT);digitalWrite(PIN_BUZZER,LOW);
   Wire.begin();
@@ -309,6 +321,8 @@ void setup() {
 }
 
 void loop() {
+  // Cooperative 1 ms loop. Per-device deadlines are independent of the
+  // synthetic/experiment recording intervals.
   uint32_t now=millis();
   const uint32_t clock=k_uptime_get_32();
   if(lastClock!=clock) {jitterStats.add(static_cast<double>(clock-lastClock));lastClock=clock;}
