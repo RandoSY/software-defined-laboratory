@@ -83,3 +83,7 @@ python python/dashboard_server.py
 ```
 
 Open **http://192.168.0.165:7000** in Chrome on the same LAN. The dashboard polls the MCU's `spirit.status` RPC, displays the reported sensor states, records experiment snapshots on Linux, stores runs in SQLite, and provides per-run CSV downloads. Starting/stopping a dashboard run controls Linux recording only; it does not switch the firmware between synthetic and live modes. Full details, storage path and API endpoints are in [`DASHBOARD.md`](DASHBOARD.md).
+
+## Standalone spectrometer test over Qwiic
+
+To bring up only an Adafruit AS7343 breakout, use [`examples/as7343-qwiic-test/`](../examples/as7343-qwiic-test/README.md). It connects the breakout by STEMMA QT/Qwiic cable to the UNO Q's onboard 3.3 V Qwiic socket and initializes `Wire1`; it does not require the Spirit shield, other sensors, or Router Bridge. The main Spirit sketch uses `Wire` on D20/D21 and is not configured for Qwiic by default. Follow the example's compile/upload and Serial Monitor steps.
