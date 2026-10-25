@@ -24,6 +24,7 @@ Exercise the original AVR Spirit 2-Wire shield's sensor interfaces safely on a 3
 - `docs/PINS_AND_SAFETY.md` — historical documented pin contract, 3.3 V adaptation plan.
 - `docs/BUILD_AND_RUN.md` — Arduino setup, commands, Zephyr specifics, host CLI.
 - **[Two-sensor prototype-shield quickstart](docs/PROTOTYPE_SHIELD_QUICKSTART.md)** — start with DS18B20 + AS7343, no custom PCB.
+- **[Spectral sensor selection and fidelity](docs/SPECTRAL_SELECTION.md)** — AS7343 first target; compare with newer TCS3448 before sensor procurement.
 - `docs/TEST_PLAN.md` — electrical and functional acceptance protocol.
 - `docs/VALIDATION.md` — evidence of tests actually run.
 
@@ -75,7 +76,7 @@ python python/spirit_cli.py shell
 python python/spirit_cli.py capture --count 100 --period 1 --output measurements.csv
 ```
 
-CLI command examples: `profile prototype` (DS18B20 + AS7343), `profile all`, `mode synthetic`, `mode live`, `gain 6` (64x), `interval 1000`, `tare`, `cal grams 100`, `start`, `stop`, `reset-stats` (where `cal grams` is available in the interactive shell). The host CLI never needs elevated privileges but does need permission to access the local router socket.
+CLI direct command or shell examples: `profile prototype` (DS18B20 + AS7343), `profile all`, `mode synthetic`, `mode live`, `gain 6` (64x), `interval 1000`, `tare`, `cal grams 100`, `start`, `stop`, `reset-stats` (where `cal grams` is available in the interactive shell). The host CLI never needs elevated privileges but does need permission to access the local router socket.
 
 ## Original vs proposed changes
 
