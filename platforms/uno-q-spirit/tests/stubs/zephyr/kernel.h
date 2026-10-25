@@ -1,4 +1,6 @@
 #pragma once
+// Host-only cooperative scheduler shim: each sleep advances fake millis().
+// It does not reproduce Zephyr priorities, interrupts, or real thread timing.
 #include "Arduino.h"
 inline unsigned long k_uptime_get_32(){return millis();}
 inline void k_msleep(int x){fakeTime()+=x;}
