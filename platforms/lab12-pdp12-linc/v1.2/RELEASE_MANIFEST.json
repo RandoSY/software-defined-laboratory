@@ -1,0 +1,106 @@
+{
+  "release": "1.2",
+  "preserved_original_sha256": "aa8c8e1420460ca92a27d94b5848f6345096e463ca71ef4c1d3e9b8bbdb03359",
+  "new_files": [
+    {
+      "path": "README.md",
+      "sha256": "904fc3bab6acd522aba42e6cea21ef821723f15115c53eed36f4c784dbd727ae"
+    },
+    {
+      "path": "dashboard/OPEN_IN_CHROME.cmd",
+      "sha256": "d9f5a77f9c0bd61fc8b8aa5cd2cb11ea0bb2acc2df95cd2d3a142e8e612356cb"
+    },
+    {
+      "path": "dashboard/lab12_dashboard.html",
+      "sha256": "ce28df38bfb3ad1ab50ffe84eb1f0619fe40eeb4d9f9aacfb00466516c7540e8"
+    },
+    {
+      "path": "documentation/PRECISION_GRAPH_GUIDE.md",
+      "sha256": "9fdb8e144672f8347bf3e7938e2072003cbf0ee9b91004f8b1702672339cdc8f"
+    },
+    {
+      "path": "documentation/PRECISION_GRAPH_SYNTHETIC_PREVIEW.png",
+      "sha256": "0747e8320400232b44129f887c0748674de7798f6c40b753370314d59614f31d"
+    },
+    {
+      "path": "documentation/PROTOCOL.md",
+      "sha256": "e92ad7b62d8fdc3b29034a27becce53487415f7960fb7298c4f21a385911b74a"
+    },
+    {
+      "path": "documentation/RELEASE_NOTES.md",
+      "sha256": "277c9abea74bd2fb3707bcf218f3c59cd09b03c1a984bce13b9a477d9c271b89"
+    },
+    {
+      "path": "documentation/TEACHER_OPERATOR_GUIDE.md",
+      "sha256": "3361cc6d4d3abae361393619e799f7053e6e7aa5d0bedf0a3f940cb5de7c1d4f"
+    },
+    {
+      "path": "documentation/WIRING.md",
+      "sha256": "2ff5e647b05b6b45744b52fbb29d9b06b81f95c731711f23220020dbfe9340f1"
+    },
+    {
+      "path": "documentation/dashboard_concept.png",
+      "sha256": "531e9ed2ffe7760159771f425a742d9572fcb747872e3b374c8cd97785ea2b70"
+    },
+    {
+      "path": "msp430_new/README.md",
+      "sha256": "c9c9f588d572d0807fb5be6e69520b999324310d0852cb45734ef86bbcbeeea4"
+    },
+    {
+      "path": "msp430_new/cooling_main.c",
+      "sha256": "13a428008ffd82b8472fc478bec3045800ce650481120444b484e1ca3bae4852"
+    },
+    {
+      "path": "msp430_new/vendor/05_thermostat_logic.h",
+      "sha256": "b4e78e52731945c112d53afe638d1219debb120cd6e4882104a327ffcda85b8a"
+    },
+    {
+      "path": "msp430_new/vendor/06_ds18b20_decode.c",
+      "sha256": "8aa327cf9fcf11fbda6c28b9956d7d857d71bda19fff2da1d1352326f5b2267d"
+    },
+    {
+      "path": "msp430_new/vendor/06_ds18b20_decode.h",
+      "sha256": "f7f715ab62eae4e69917151baf4c1804298bb414a1f3a82805ce184bf538ea7d"
+    },
+    {
+      "path": "msp430_new/vendor/09_onewire_transport_CANDIDATE.c",
+      "sha256": "9fdc755fe2c3d0b111d1c402e0c7d9215be5728533cb4a1567379140751181d3"
+    },
+    {
+      "path": "msp430_new/vendor/12_sensor_evidence.c",
+      "sha256": "b853f7824fbdef35080234d01e15830cdbdf63645ccc0426546767ff74211c59"
+    },
+    {
+      "path": "msp430_new/vendor/12_sensor_evidence.h",
+      "sha256": "daa8bb0bcefbf83a9bebcfc7cf1b762e5cc56be7c0addcccbc6ec21845dfec67"
+    },
+    {
+      "path": "pico_w/__pycache__/labcore.cpython-313.pyc",
+      "sha256": "4cc4131598dded8990df28561d9ae26cbf9371ef011882c0b3c2c9c00c92c3af"
+    },
+    {
+      "path": "pico_w/__pycache__/protocol.cpython-313.pyc",
+      "sha256": "a567367e53b09c05b909433ba22d319d12497eb9ca2e733debbb583182c1549c"
+    },
+    {
+      "path": "pico_w/labcore.py",
+      "sha256": "468a2f100304439fde50c97088f2e160e4699f73c0db7ca7dcccbb79803aca2b"
+    },
+    {
+      "path": "pico_w/main.py",
+      "sha256": "c78519f99d0cd78f60a4bb768a236a42295d66977cc108bd191ce680da81af08"
+    },
+    {
+      "path": "pico_w/protocol.py",
+      "sha256": "797a038570f69f72b33ec956aeefc68dd557a1efe72e22790bbb159fed37e23f"
+    },
+    {
+      "path": "tests/__pycache__/test_lab12.cpython-313.pyc",
+      "sha256": "148e73a82e42e6a91ea406d02dee340efac0adf04bef141b83cc0db9e4146fa8"
+    },
+    {
+      "path": "tests/test_lab12.py",
+      "sha256": "5e7ed9a1ecab807bdd9f6c4c19d7f0c06f5bde95954f66111b304996f8453d6b"
+    }
+  ]
+}
