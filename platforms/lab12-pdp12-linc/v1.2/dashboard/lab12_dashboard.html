@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LAB-12 | Digital Cooling Laboratory</title>
+<!--
+ LAB-12 operator station. All source (CSS and JS) deliberately lives in ONE
+ offline HTML file. No CDN, database, Wi-Fi, Python bridge or external assets.
+
+ The RP2040 is the experiment computer. This page only:
+  (1) administers experiments and operator annotations,
+  (2) draws results ALREADY computed by the RP2040,
+  (3) saves experiment data via CSV files requested by the operator.
+
+ Chrome Web Serial requires a secure context, a USB-connected Pico with
+ MicroPython, and an explicit click on "Connect" to choose the port.
+ Run the file in Chrome (local file:// is generally considered trustworthy),
+ or serve the STATIC file from localhost if restricted by browser policy.
+-->
+<style>
+:root{color-scheme:dark;--bg:#0a111b;--panel:#101e2d;--panel2:#0c1725;--stroke:#2a3b4e;--text:#edf3fa;--muted:#96aabe;--cyan:#5ae7ee;--lime:#8cebba;--gold:#f7c775;--purple:#bb9dff;--red:#ff8488;--r:12px}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;font-size:14px;overflow:hidden}button,input,select,textarea{font:inherit}button{border:1px solid var(--stroke);background:#17283a;color:var(--text);padding:9px 12px;border-radius:8px;cursor:pointer;transition:background .2s}button:hover{background:#28435b}button:disabled{cursor:not-allowed;opacity:.5}.primary{background:#0d6e69;border-color:#2bb6ad;font-weight:700}.danger{border-color:#825052;color:#ffc6c7}.outline{background:transparent}input,select,textarea{background:#0b1826;border:1px solid #38516a;color:var(--text);border-radius:7px;padding:9px;min-width:0}textarea{resize:vertical;line-height:1.5}.app{height:100%;display:flex;flex-direction:column;min-height:0}.top{display:flex;align-items:center;gap:20px;padding:14px 20px 11px;background:#101c2b;border-bottom:1px solid var(--stroke);flex-shrink:0}.brand{display:flex;gap:12px;align-items:center;min-width:0;flex:1}.brandmark{width:42px;height:42px;background:#143f46;color:var(--cyan);border:1px solid #29656b;display:grid;place-items:center;border-radius:11px;font-weight:800;font-size:19px}.brand h1{font-size:20px;letter-spacing:.1px;line-height:1.2;margin:0 0 3px}.small{font-size:11px;color:var(--muted)}.topright{display:flex;align-items:center;gap:10px}.statusdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#65798c;margin-right:7px}.statusdot.on{background:#64e4ad;box-shadow:0 0 8px #64e4ad77}.tag{font-size:11px;letter-spacing:.8px;text-transform:uppercase;border:1px solid #3c586d;padding:5px 8px;border-radius:6px;color:#c2e3eb}.tabs{display:flex;gap:6px;background:#101c2b;padding:4px 20px 11px;border-bottom:1px solid var(--stroke);flex-shrink:0}.tab{border-color:transparent;background:transparent;color:#a7bed3;padding:9px 15px}.tab.active{border-color:#2b6e77;background:#15343d;color:#9df7ee}.content{flex:1;min-height:0;display:flex;padding:14px;gap:14px}.panel{background:linear-gradient(160deg,#112131,#0c1927);border:1px solid var(--stroke);border-radius:var(--r);min-height:0;overflow:hidden}.panelhead{padding:11px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #293949;gap:9px}.panelhead strong{font-size:13px;letter-spacing:.2px}.muted{color:var(--muted)}.value{font-weight:700;font-variant-numeric:tabular-nums}.cyan{color:var(--cyan)}.lime{color:var(--lime)}.gold{color:var(--gold)}.red{color:var(--red)}.page{display:none;min-width:0;flex:1;min-height:0}.page.active{display:flex}.livegrid{display:grid;grid-template-columns:208px minmax(380px,1fr) 270px;gap:14px;width:100%;min-height:0}.left{display:grid;grid-template-rows:repeat(5,minmax(0,1fr));gap:10px;min-height:0}.metric{padding:12px 15px;display:flex;flex-direction:column;justify-content:center;gap:7px}.metric label{font-size:11px;color:#94a9bd;text-transform:uppercase;letter-spacing:.8px}.metric .v{font-size:27px;letter-spacing:-1px;font-weight:750}.metric .s{font-size:11px;color:var(--muted)}.center{display:grid;grid-template-rows:minmax(0,1fr) 170px;gap:14px;min-height:0}.plot{display:flex;flex-direction:column;min-height:0}.plot canvas{width:100%;height:100%;display:block}.plotbody{flex:1;min-height:0;position:relative;padding:2px 8px 6px}.plotlegend{display:flex;gap:13px;flex-wrap:wrap;font-size:11px;color:#d3e1ed}.legendline{display:inline-block;width:17px;border-top:2px solid currentColor;vertical-align:middle;margin-right:5px}.right{display:flex;flex-direction:column;gap:10px;min-height:0;padding:12px}.right .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.field{display:grid;gap:5px}.field label{font-size:11px;letter-spacing:.4px;color:var(--muted)}.field input,.field select{width:100%}.grow{flex:1;min-height:65px}.grow textarea{height:100%;width:100%;max-height:180px}.divider{border-top:1px solid var(--stroke);margin:2px 0}.tiny{font-size:11px;line-height:1.5}.footer{height:32px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;padding:0 18px;border-top:1px solid var(--stroke);font-size:11px;color:var(--muted);background:#111d2b}.secondary-page{display:grid!important;grid-template-columns:minmax(320px,1fr) minmax(290px,1fr);gap:14px}.secondary-page:not(.active){display:none!important}.pad{padding:16px;overflow:auto}.stack{display:grid;gap:11px}.kv{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #25394a;padding:10px 0}.kv b{font-weight:500;color:#d2e1eb}.callout{background:#102c35;border:1px solid #245d63;border-radius:9px;padding:13px;line-height:1.5;color:#c5ece9}.warning{background:#37271c;border-color:#775737;color:#ffe1a6}.tablewrap{overflow:auto;max-height:calc(100% - 44px)}table{border-collapse:collapse;width:100%;font-size:12px}th{position:sticky;top:0;background:#1a3040;color:#a9bdcb;text-align:left;padding:9px 10px}td{padding:7px 10px;border-bottom:1px solid #243746;white-space:nowrap;font-variant-numeric:tabular-nums}tbody tr:nth-child(odd){background:#122334}code,pre{font-family:Cascadia Code,Consolas,monospace;font-size:12px}pre{white-space:pre-wrap;color:#cde5ee}.datagrid{display:grid;grid-template-rows:auto minmax(0,1fr);gap:14px;width:100%}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:11px}.data-cols{display:grid;grid-template-columns:minmax(480px,2fr) minmax(240px,1fr);gap:14px;min-height:0}.data-cols .panel{height:100%}.scroll{height:calc(100% - 44px);overflow:auto}.hide{display:none!important}.badge{padding:4px 7px;background:#153847;color:#94f3e8;border-radius:5px;font-size:11px}.controlslabel{font-size:11px;color:var(--muted)}
+@media(max-width:1100px){.livegrid{grid-template-columns:170px minmax(350px,1fr) 238px}.brand h1{font-size:17px}.content{padding:9px;gap:9px}.center{grid-template-rows:minmax(0,1fr) 145px}.metric .v{font-size:23px}}@media(max-width:850px){html,body{overflow:auto;height:auto;min-height:100%}.app{min-height:100vh;height:auto}.content{height:auto}.livegrid{display:flex;flex-direction:column}.left{grid-template-columns:repeat(5,1fr);grid-template-rows:unset}.center{height:600px}.right{height:auto}.top{flex-wrap:wrap}.secondary-page{grid-template-columns:1fr}.data-cols{grid-template-columns:1fr}.page{min-height:600px}.footer{height:auto;min-height:36px}}
+
+/* ================================================================
+   PRECISION GRAPH TAB: independent full-height lab scope.
+   All geometry uses the actual canvas dimensions and instrument times.
+   Display settings change only the rendering, never sensor data or Pico fit.
+   ================================================================ */
+.scope-shell{display:flex;flex-direction:column;gap:11px;min-height:0;min-width:0;width:100%}
+.scope-toolbar{min-height:58px;padding:9px 15px;display:flex;align-items:center;justify-content:space-between;gap:15px;flex-shrink:0}
+.scope-title{font-size:16px;font-weight:750;letter-spacing:.1px}.scope-kicker{font-size:10px;text-transform:uppercase;letter-spacing:1.3px;color:#70d6d7;margin-bottom:4px}
+.scope-options{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px}
+.scope-options select,.scope-options input{padding:7px 8px;font-size:12px}
+.scope-options label{font-size:11px;color:#b6c7d7}.scope-options button{padding:7px 11px;font-size:12px}
+.scope-options .check{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.scope-options .check input{accent-color:#48d5db}
+.scope-options .numbox{width:68px}
+.scope-layout{display:grid;grid-template-columns:minmax(0,1fr) 225px;gap:11px;flex:1;min-height:0;min-width:0}
+.scope-stack{display:grid;grid-template-rows:minmax(0,1fr) minmax(128px,23%);gap:11px;min-height:0;min-width:0}
+.scope-panel{display:flex;flex-direction:column;min-height:0}
+.scope-panelhead{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 16px 9px;flex-shrink:0;border-bottom:1px solid #22384a}
+.scope-panelhead strong{font-size:13px}.scope-note{color:#91abc0;font-size:11px}
+.scope-legend{display:flex;gap:17px;flex-wrap:wrap;font-size:11px}
+.scope-legend>span{white-space:nowrap}
+.scope-chart-wrap{position:relative;flex:1;min-height:0;padding:0 8px 2px}
+.scope-chart-wrap canvas{width:100%;height:100%;display:block;cursor:crosshair}
+.scope-tooltip{position:absolute;pointer-events:none;z-index:4;min-width:180px;max-width:250px;background:#071520f4;border:1px solid #3b7288;box-shadow:0 12px 32px #0008;padding:10px 12px;border-radius:9px;font-size:12px;line-height:1.65;color:#e0eff5}
+.scope-tooltip[hidden]{display:none}.scope-tooltip b{color:#70e8eb}.scope-tooltip .tmeta{font-size:10px;color:#a8bbca}
+.scope-side{display:flex;flex-direction:column;min-height:0;gap:11px}
+.scope-hero{padding:15px 16px;background:linear-gradient(130deg,#123644,#102233 63%)}
+.scope-hero-label{color:#a7bece;text-transform:uppercase;font-size:10px;letter-spacing:1.1px}
+.scope-hero-value{font-size:42px;font-weight:760;letter-spacing:-1.8px;color:#73f1e9;margin:8px 0 4px;font-variant-numeric:tabular-nums}
+.scope-hero-unit{font-size:18px;color:#bbdfe2;margin-left:3px}
+.scope-side .panel{padding:13px 14px;flex-shrink:0}
+.scope-side .scope-stats{flex:1;overflow:auto;min-height:0}
+.scope-stat{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px solid #203b4b;font-size:12px}
+.scope-stat:last-child{border-bottom:none}.scope-stat span{color:#8ea9be}.scope-stat strong{font-variant-numeric:tabular-nums;font-size:13px;text-align:right}
+.scope-good{color:#8df2c0}.scope-source{font-size:11px;color:#a0c7d0;line-height:1.5}
+.scope-statusbar{padding:7px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0;font-size:11px;color:#b1c7d4}
+.scope-statusbar strong{color:#84ead8}
+.scope-statusbar .scope-hint{color:#8faabb}
+.scope-reading{border-left:2px solid #6fdae0;padding-left:9px;margin-top:11px;font-size:11px;color:#b3c9d6;line-height:1.6}
+@media(max-width:1150px){.scope-layout{grid-template-columns:minmax(0,1fr) 190px}.scope-hero-value{font-size:34px}.scope-toolbar{align-items:flex-start}.scope-options{max-width:68%}.scope-legend{gap:7px}.scope-side .panel{padding:10px}}
+@media(max-width:850px){.scope-layout{grid-template-columns:1fr}.scope-stack{min-height:670px}.scope-side{display:grid;grid-template-columns:repeat(2,1fr)}.scope-options{max-width:100%;justify-content:flex-start}.scope-toolbar{display:block}.scope-options{padding-top:12px}.scope-shell{min-height:980px}.scope-statusbar{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="brand"><div class="brandmark">12</div><div><h1>LAB-12 <span class="muted">/</span> Digital Cooling Laboratory</h1><div class="small">LINC-inspired experimental computing · MSP430G2553 · Pico W MicroPython · Chrome Web Serial</div></div></div><div class="topright"><span class="tag" id="mode">OFFLINE</span><span class="small"><i class="statusdot" id="portDot"></i><span id="connLabel">Not connected</span></span><button id="connectBtn" class="primary">Connect USB</button><button id="disconnectBtn" class="outline" disabled>Disconnect</button></div></header>
+<nav class="tabs" aria-label="Console sections"><button class="tab active" data-tab="scope">Precision graph</button><button class="tab" data-tab="live">Experiment control</button><button class="tab" data-tab="instrument">LINC instrument</button><button class="tab" data-tab="data">Data / CSV</button><button class="tab" data-tab="guide">Lab guide</button></nav>
+<main class="content">
+
+<!-- Dedicated high-resolution, real-time laboratory scope: no fitting is done here. -->
+<section class="page active" id="page-scope"><div class="scope-shell">
+  <div class="panel scope-toolbar">
+    <div><div class="scope-kicker">PDP-12 / LINC laboratory scope</div><div class="scope-title">Live cooling trace <span class="small" id="scopeLiveLabel">· Awaiting observations</span></div></div>
+    <div class="scope-options" role="group" aria-label="Graph display controls">
+      <label for="scopeWindow">Time</label><select id="scopeWindow" title="Elapsed-time window"><option value="all">Entire run</option><option value="60">Last 1 min</option><option value="300" selected>Last 5 min</option><option value="900">Last 15 min</option><option value="1800">Last 30 min</option><option value="3600">Last 60 min</option></select>
+      <label for="scopeYMode">°C axis</label><select id="scopeYMode" title="Temperature axis scaling"><option value="auto" selected>Auto / true scale</option><option value="fixed">Manual limits</option></select>
+      <input class="numbox" id="scopeYMin" type="number" step="0.1" value="20" title="Manual minimum temperature in °C" aria-label="Temperature minimum" disabled>
+      <input class="numbox" id="scopeYMax" type="number" step="0.1" value="80" title="Manual maximum temperature in °C" aria-label="Temperature maximum" disabled>
+      <label class="check"><input id="scopeFit" type="checkbox" checked>Model</label>
+      <label class="check"><input id="scopeEvents" type="checkbox" checked>Events</label>
+      <button id="scopeFreeze" title="Hold the display time window. Recording continues.">Hold view</button>
+      <button id="scopePng" title="Download the temperature plot as PNG">Save PNG</button>
+    </div>
+  </div>
+  <div class="scope-layout">
+    <div class="scope-stack">
+      <div class="panel scope-panel">
+        <div class="scope-panelhead"><strong>Temperature / elapsed experiment time</strong>
+          <div class="scope-legend"><span class="cyan"><i class="legendline"></i>DS18B20 measured</span><span class="gold"><i class="legendline"></i>Pico fitted model</span><span class="lime"><i class="legendline"></i>Ambient reference</span><span style="color:#cba6f3"><i class="legendline"></i>Interventions</span></div>
+        </div>
+        <div class="scope-chart-wrap" id="scopeChartWrap"><canvas id="scopeChart" aria-label="Interactive live cooling graph, measured temperature versus elapsed seconds. Hover to inspect." role="img"></canvas><div class="scope-tooltip" id="scopeTooltip" hidden></div></div>
+      </div>
+      <div class="panel scope-panel">
+        <div class="scope-panelhead"><strong>Model residual · observed − predicted (°C)</strong><span class="scope-note" id="scopeResidualLabel">Model from Pico W · waiting for fit</span></div>
+        <div class="scope-chart-wrap"><canvas id="scopeResidual" aria-label="Graph of temperature residuals versus time" role="img"></canvas></div>
+      </div>
+    </div>
+    <aside class="scope-side">
+      <div class="panel scope-hero"><div class="scope-hero-label">Latest verified temperature</div><div class="scope-hero-value"><span id="scopeTemp">—</span><span class="scope-hero-unit">°C</span></div><div class="scope-source" id="scopeQuality">No valid sensor evidence yet</div></div>
+      <div class="panel scope-stats"><div class="scope-kicker">Experiment telemetry</div>
+        <div class="scope-stat"><span>Elapsed</span><strong id="scopeElapsed">—</strong></div>
+        <div class="scope-stat"><span>Ambient reference</span><strong id="scopeAmbient">—</strong></div>
+        <div class="scope-stat"><span>Cooling k</span><strong id="scopeK">—</strong></div>
+        <div class="scope-stat"><span>Time constant τ</span><strong id="scopeTau">—</strong></div>
+        <div class="scope-stat"><span>RMS residual</span><strong id="scopeRms">—</strong></div>
+        <div class="scope-stat"><span>Valid / invalid</span><strong id="scopeCounts">0 / 0</strong></div>
+        <div class="scope-stat"><span>Sequence gaps</span><strong id="scopeGaps">—</strong></div>
+        <div class="scope-stat"><span>Sampling jitter</span><strong id="scopeJitter">—</strong></div>
+      
+      </div>
+      <div class="panel"><div class="scope-kicker">Data source / recording</div><div class="scope-source" id="scopeSource">Offline · waiting for instrument</div><div class="scope-source" id="scopeRecording" style="margin-top:7px">CSV not recording</div></div>
+    </aside>
+  </div>
+  <div class="panel scope-statusbar"><span id="scopeAxisInfo">Actual elapsed seconds · scaled °C axis</span><span class="scope-hint">Hover: inspect sensor evidence · red × = invalid · DS18B20 12-bit resolution 0.0625 °C ≠ accuracy</span><span id="scopeSession">No active session</span></div>
+</div></section>
+<section class="page" id="page-live"><div class="livegrid">
+<div class="left">
+<div class="panel metric"><label>Temperature</label><span id="temp" class="v cyan">—</span><span class="s">DS18B20 validated by Pico</span></div>
+<div class="panel metric"><label>Ambient reference</label><span id="ambientMetric" class="v">23.0 °C</span><span class="s">Operator-specified value</span></div>
+<div class="panel metric"><label>Cooling constant k</label><span id="k" class="v gold">—</span><span class="s">Pico fit / second</span></div>
+<div class="panel metric"><label>Time constant τ</label><span id="tau" class="v">—</span><span class="s">Computed on RP2040</span></div>
+<div class="panel metric"><label>Valid / invalid</label><span id="quality" class="v lime">0 / 0</span><span class="s" id="qdetail">No samples acquired</span></div>
+</div>
+<div class="center">
+<div class="panel plot"><div class="panelhead"><strong>Temperature versus elapsed experimental time</strong><div class="plotlegend"><span style="color:var(--cyan)"><i class="legendline"></i>Measured</span><span style="color:var(--gold)"><i class="legendline"></i>Pico model</span><span style="color:var(--lime)"><i class="legendline"></i>Ambient</span></div></div><div class="plotbody"><canvas id="tempChart" aria-label="Live, properly scaled cooling curve"></canvas></div></div>
+<div class="panel plot"><div class="panelhead"><strong>Model residuals · measured − predicted</strong><span class="small" id="fitQuality">Waiting for ≥6 valid samples</span></div><div class="plotbody"><canvas id="residChart"></canvas></div></div>
+</div>
+<div class="panel right"><div class="panelhead" style="margin:-12px -12px 4px"><strong>Experiment administration</strong></div>
+<div class="row2"><button id="startBtn" class="primary">▶ Start</button><button id="stopBtn">■ Stop</button></div>
+<div class="row2"><button id="statusBtn">Status</button><button id="clearBtn" class="danger">New run</button></div>
+<div class="field"><label>Sample period</label><select id="period"><option value="1000">1 second</option><option value="2000">2 seconds</option><option value="5000" selected>5 seconds</option><option value="10000">10 seconds</option><option value="30000">30 seconds</option></select></div>
+<div class="field"><label>Ambient measured externally (°C)</label><input id="ambient" type="number" min="-40" max="110" step="0.1" value="23.0"/></div>
+<div class="row2"><button id="applyBtn">Apply settings</button><button id="fitBtn">Fit: ON</button></div>
+<div class="divider"></div>
+<div class="field"><label>Event label</label><input id="eventLabel" maxlength="44" placeholder="e.g. Stirred water" /></div><button id="markBtn">Mark experiment event</button>
+<div class="field grow"><label>Run notes (saved with CSV metadata)</label><textarea id="notes" placeholder="Water volume, vessel material, starting condition, ambient thermometer, observations..."></textarea></div>
+<div class="row2"><button id="saveCsvBtn" class="primary">Export CSV</button><button id="recordBtn">Record to file</button></div>
+<div class="tiny muted" id="runhint">Use Chrome Connect USB or Demo on the Lab guide tab. CSV file recording is operator-authorized.</div>
+</div></div></section>
+<section class="page secondary-page" id="page-instrument"><div class="panel"><div class="panelhead"><strong>LAB-12 experiment computer (RP2040)</strong><span class="badge">ON DEVICE</span></div><div class="pad"><div class="callout">The Pico is the laboratory computer. It executes the programmed acquisition cycle, stores a ring of observations, independently validates sensor evidence, measures intervals, and fits Newton's model. Chrome does not perform the scientific fit.</div><div class="kv"><b>Resident program</b><span id="program">ACQUIRE → VALIDATE → STORE → ANALYZE → PUBLISH</span></div><div class="kv"><b>Lab memory</b><span id="memory">0 / 160 points</span></div><div class="kv"><b>Sample interval (measured)</b><span id="measInterval">—</span></div><div class="kv"><b>Sample interval SD</b><span id="jitter">—</span></div><div class="kv"><b>GPIO event markers observed</b><span id="markers">—</span></div><div class="kv"><b>Sequence gaps</b><span id="gaps">—</span></div><div class="kv"><b>UART framing errors</b><span id="serialErrors">—</span></div><div class="kv"><b>Scientific model</b><span id="fitMode">Not established</span></div><div class="kv"><b>Autonomous cooling event</b><span id="triggerState">Not armed</span></div><div class="field"><label>Threshold °C (Pico-controlled event)</label><input type="number" id="threshold" value="40" min="-40" max="110" step="0.5"/></div><div class="row2" style="margin-top:8px"><button id="armBtn">Arm crossing</button><button id="disarmBtn">Disable crossing</button></div><div class="kv"><b>MSP430 status</b><span id="mspStatus">No reply</span></div><p class="small">GP2 software interrupt timestamps are observations, not calibrated sub-microsecond measurements. A finished 1-Wire conversion and a UART report are not identical in time.</p></div></div><div class="panel"><div class="panelhead"><strong>Instrument event log</strong><button id="historyBtn">Retrieve Pico memory</button></div><div class="pad"><pre id="eventLog" role="log">No instrument messages.</pre></div></div></section>
+<section class="page" id="page-data"><div class="datagrid"><div class="panel toolbar"><strong>Experiment records</strong><span class="small" id="recordCount">0 rows</span><button id="dataCsvBtn">Download observations CSV</button><button id="eventCsvBtn">Download event CSV</button><button id="metaBtn">Export run metadata JSON</button><span class="small" id="fileStatus">Not recording to file</span></div><div class="data-cols"><div class="panel"><div class="panelhead"><strong>Latest observations</strong><span class="small">Pico-generated scientific results; raw evidence preserved</span></div><div class="scroll"><table><thead><tr><th>Run</th><th>Seq</th><th>Time (s)</th><th>Temp (°C)</th><th>Model (°C)</th><th>Residual (°C)</th><th>Valid</th><th>Event clock</th></tr></thead><tbody id="sampleRows"></tbody></table></div></div><div class="panel"><div class="panelhead"><strong>Data organization & session notes</strong></div><div class="pad stack"><div class="callout">Measurements are preserved in browser memory while this page remains open. Export CSV to save a snapshot. “Record to file” writes new samples to an operator-chosen CSV file through Chrome's File System Access API.</div><div><label class="controlslabel">Experiment ID</label><div id="runId">Pico run 0</div></div><div><label class="controlslabel">Source</label><div id="dataSource">No instrument selected</div></div><div><label class="controlslabel">Last received</label><div id="lastRx">—</div></div><div><label class="controlslabel">CSV format</label><pre>utc_received,run_id,seq,time_ms,temp_c,model_c,residual_c,valid,quality,source_clock,delta_ms,missing,raw_x16,rom,scratch,raw_uart</pre></div><div class="tiny muted">When the Pico's ring fills (160 records), history retrieval is partial. Browser CSV is the long-duration record. Use operator notes for physical conditions and calibration context.</div></div></div></div></div></section>
+<section class="page secondary-page" id="page-guide"><div class="panel"><div class="panelhead"><strong>Start a laboratory session</strong></div><div class="pad stack"><div class="callout">Hardware: DS18B20 ↔ MSP430 P1.7; MSP430 UART ↔ Pico GP0/GP1; optional P2.0 marker ↔ Pico GP2; Pico USB ↔ Chrome. Share ground and use 3.3 V logic only.</div><p><strong>1.</strong> Upload <code>protocol.py</code>, <code>labcore.py</code>, and <code>main.py</code> to Pico W running MicroPython. Program the separate MSP430 acquisition application through its debug interface.</p><p><strong>2.</strong> Close Thonny and any serial monitor using the Pico USB port. Open this file in current Chrome. Click <strong>Connect USB</strong> and select the Pico serial device.</p><p><strong>3.</strong> Measure the actual room temperature with another thermometer, enter it as ambient, choose the sample period, and click <strong>Apply settings</strong> then <strong>Start</strong>.</p><p><strong>4.</strong> Use the <strong>Precision graph</strong> tab for the full-resolution cooling curve, elapsed-time windows, °C scaling, crosshair, and model/residual overlays. Under <strong>Experiment control</strong>, press <strong>Mark experiment event</strong> whenever you stir, insulate, or otherwise change conditions. See instrument errors and fit statistics under <strong>LINC instrument</strong>.</p><p><strong>5.</strong> Use <strong>Record to file</strong> for ongoing on-disk CSV recording, or <strong>Export CSV</strong> at the end to download the complete current browser session.</p><div class="callout warning">The original 1-Wire transport and newly integrated MSP430 application are hardware-validation candidates. Do not use this educational system for safety-critical temperature control.</div></div></div><div class="panel"><div class="panelhead"><strong>Offline simulation and teaching notes</strong></div><div class="pad stack"><p>A clearly marked synthetic cooling run allows exploration of the dashboard without hardware. The synthetic model shown is a demo stand-in for the data normally computed by the Pico; it is never presented as physical measurement.</p><div><button id="demoBtn" class="primary">Start simulated experiment</button><button id="demoStopBtn">Stop simulation</button></div><p><strong>Teaching questions:</strong> What is a sampling interval? Why do we preserve invalid evidence? Why does a DS18B20 take up to 750 ms to convert? What can a Pico timestamp establish, and what can it not establish? Can the Pico detect a temperature threshold even while the browser is disconnected? Why does a fixed ambient temperature affect the inferred cooling constant?</p><p><strong>Newton's cooling:</strong> T(t) = T<sub>a</sub> + (T<sub>0</sub> − T<sub>a</sub>) exp(−kt). The Pico uses a log-linear fit for the valid measurements where T − T<sub>a</sub> is sufficiently positive.</p><p><strong>Architecture boundary:</strong> MSP430 owns the 1-Wire bus. Pico owns experimental operations, scientific fitting and volatile sample memory. Browser owns graphics, user administration and the persistent CSV file.</p></div></div></section>
+</main><footer class="footer"><span id="footerLeft">LAB-12 · Waiting for USB connection · Offline and dependency-free</span><span id="footerRight">Instrument data / CSV persist only when saved by operator</span></footer></div>
+<script>
+'use strict';
+/* ========================================================================
+   OPERATOR STATION (Chrome): no scientific fitting occurs in this script.
+   The RP2040 sends 'sample' and 'status' JSON records containing model
+   coefficients and quality statistics. Charts only render those results.
+   ======================================================================== */
+const $ = id => document.getElementById(id);
+const state = {port:null, reader:null, writer:null, connected:false, demo:false,
+  demoTimer:null, rows:[], events:[], shown:[], seen:new Set(), model:null,
+  status:null, runId:0, fit:true, lastMs:0, file:null, fileQueue:Promise.resolve(),
+  streamOpen:false, recentLog:[]};
+const CSV_COLS=['utc_received','run_id','seq','time_ms','temp_c','model_c','residual_c','valid','quality','source_clock','delta_ms','missing','raw_x16','rom','scratch','raw_uart'];
+const fmt=(v,d=2)=>v===null||v===undefined||!Number.isFinite(Number(v))?'—':Number(v).toFixed(d);
+function log(message){
+  state.recentLog.unshift(`${new Date().toLocaleTimeString()}  ${String(message).slice(0,240)}`);
+  state.recentLog=state.recentLog.slice(0,100);
+  $('eventLog').textContent=state.recentLog.join('\n');
+}
+function sourceLabel(){return state.demo?'SYNTHETIC DEMO — NOT HARDWARE':state.connected?'PICO W / USB WEB SERIAL':'OFFLINE';}
+function updateMode(){
+  $('mode').textContent=state.demo?'DEMO':state.connected?'USB LIVE':'OFFLINE';
+  $('portDot').className='statusdot'+(state.connected||state.demo?' on':'');
+  $('connLabel').textContent=state.demo?'Synthetic readings':state.connected?'Pico USB connected':'Not connected';
+  $('connectBtn').disabled=state.connected||state.demo;
+  $('disconnectBtn').disabled=!state.connected;
+  $('dataSource').textContent=sourceLabel();
+  $('footerLeft').textContent='LAB-12 · '+sourceLabel();
+  if(typeof queueScopeRender==='function')queueScopeRender();
+}
+for(const tab of document.querySelectorAll('.tab')) tab.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===tab));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+tab.dataset.tab));
+  if(tab.dataset.tab==='scope')queueScopeRender();
+  requestAnimationFrame(redraw);
+});
+
+/* Chrome Web Serial: user grants permission by pressing Connect USB.
+   MicroPython may emit REPL startup banners; ignore non-JSON lines. */
+let cancelRequested=false;
+async function connectUSB(){
+  if(!('serial' in navigator)){
+    log('Web Serial unavailable. Open this file in Chrome on a secure context.');
+    alert('Chrome Web Serial is unavailable. Use desktop Chrome (not Firefox).');return;
+  }
+  try{
+    state.port=await navigator.serial.requestPort();
+    await state.port.open({baudRate:115200}); // USB CDC baud is nominal only.
+    state.writer=state.port.writable.getWriter();
+    state.connected=true;cancelRequested=false;updateMode();
+    log('Chrome connected to Pico USB CDC.');
+    readLoop(); // intentionally running concurrently; no Python process.
+    setTimeout(()=>{ if(state.connected)send('HELLO'); },300);
+  }catch(err){log('USB connection failed: '+err.message);updateMode();}
+}
+async function readLoop(){
+  const decoder=new TextDecoder();let text='';
+  try{
+    while(state.connected){
+      state.reader=state.port.readable.getReader();
+      try{
+        while(state.connected){
+          const {value,done}=await state.reader.read();
+          if(done)break;
+          text+=decoder.decode(value,{stream:true});
+          // Guard against noisy output or an incorrect serial device.
+          if(text.length>200000)text='';
+          let pos;
+          while((pos=text.indexOf('\n'))>=0){
+            const line=text.slice(0,pos).trim();text=text.slice(pos+1);
+            if(!line.startsWith('{'))continue;
+            try{receive(JSON.parse(line));}catch(e){log('JSON record rejected: '+e.message);}
+          }
+        }
+      }finally{state.reader.releaseLock();state.reader=null;}
+      if(cancelRequested)break;
+    }
+  }catch(err){if(!cancelRequested)log('USB read error: '+err.message);}
+  finally{await disconnectUSB();}
+}
+async function disconnectUSB(){
+  if(!state.port)return;
+  cancelRequested=true;state.connected=false;
+  try{if(state.reader)await state.reader.cancel();}catch(e){}
+  try{if(state.writer){state.writer.releaseLock();state.writer=null;}}catch(e){}
+  try{await state.port.close();}catch(e){}
+  state.port=null;updateMode();
+}
+async function send(command){
+  if(state.demo){log('Demo: operator command '+command);return;}
+  if(!state.writer){log('Not connected: '+command);return;}
+  try{await state.writer.write(new TextEncoder().encode(command+'\n'));}
+  catch(err){log('USB write failed: '+err.message);}
+}
+
+/* All protocol event handling remains separate from drawing and file I/O. */
+function receive(packet){
+  if(!packet||typeof packet.type!=='string')return;
+  $('lastRx').textContent=new Date().toLocaleString();
+  if(packet.type==='hello'){log('Pico: '+(packet.description||packet.device));send('STATUS');}
+  else if(packet.type==='sample'||packet.type==='history_sample'){addSample(packet);}
+  else if(packet.type==='status'){
+    state.status=packet;state.runId=packet.run_id??state.runId;
+    if(Object.hasOwn(packet,'model'))state.model=packet.model;
+    $('runId').textContent='Pico run '+state.runId;
+    $('ambientMetric').textContent=fmt(packet.ambient_c,1)+' °C';
+    $('ambient').value=packet.ambient_c;
+    $('memory').textContent=`${packet.memory_items??'—'} / ${packet.memory_capacity??160} points`;
+    $('measInterval').textContent=fmt(packet.measured_period_ms,2)+' ms';
+    $('jitter').textContent=fmt(packet.interval_sd_ms,2)+' ms';
+    $('markers').textContent=packet.marker_events??'—';
+    $('gaps').textContent=packet.missing??'—';
+    $('triggerState').textContent=packet.trigger_c===null?'Not armed':(packet.trigger_fired?'FIRED at '+packet.trigger_c+' °C':(packet.trigger_armed?'Watching fall below ':'Waiting above ')+packet.trigger_c+' °C');
+    $('serialErrors').textContent=JSON.stringify(packet.errors??{});
+    $('quality').textContent=`${packet.good??0} / ${packet.bad??0}`;
+    $('qdetail').textContent=`${packet.missing??0} missing · ${packet.total??0} acquired`;
+    $('program').textContent=Array.isArray(packet.program)?packet.program.join(' → '):'—';
+    $('fitMode').textContent=packet.model?'Pico fitted k = '+fmt(packet.model.k_per_s,6)+' s⁻¹':'Insufficient fit data';
+    state.fit=!!packet.fit_enabled;$('fitBtn').textContent='Fit: '+(state.fit?'ON':'OFF');
+    if(packet.model)updateModelCards();redraw();
+  }else if(packet.type==='cleared'){
+    state.shown=[];state.seen=new Set();state.model=null;state.runId=packet.run_id;
+    log('New Pico run '+packet.run_id+'; prior CSV observations retained.');redraw();
+  }else if(packet.type==='parameter'){
+    if(packet.name==='ambient_c')$('ambientMetric').textContent=fmt(packet.value,1)+' °C';
+    if(Object.hasOwn(packet,'model'))state.model=packet.model;
+    redraw();
+  }else if(packet.type==='history_start')log('Pico memory replay: '+packet.available+' observations'+(packet.partial?' (partial)':''));
+  else if(packet.type==='history_end') {if(Object.hasOwn(packet,'model'))state.model=packet.model;redraw();}
+  else if(packet.type==='event'){
+    state.events.push({...packet,utc_received:new Date().toISOString()});
+    log('EVENT '+packet.label+' @ '+fmt(packet.t_ms/1000,2)+'s');redraw();
+  }else if(packet.type==='msp_message'){$('mspStatus').textContent=packet.message;log('MSP430 '+packet.message);}
+  else if(packet.type==='error')log('ERROR ['+packet.source+'] '+packet.message);
+  else if(packet.type==='command_sent')log('Sent to '+packet.target+': '+packet.command);
+}
+function addSample(p){
+  // Replayed data must not create duplicate CSV rows or redraw markers.
+  const key=`${state.demo?'demo':'usb'}:${p.run_id}:${p.seq}`;
+  if(state.seen.has(key))return;
+  state.seen.add(key);
+  if(p.run_id!==undefined&&p.run_id!==state.runId){state.shown=[];state.seen=new Set([key]);state.runId=p.run_id;}
+  const row={...p,utc_received:new Date().toISOString()};
+  state.shown.push(row);state.rows.push(row);
+  // Browser is a long-duration recording station, not bounded by the Pico ring.
+  if(state.shown.length>6000)state.shown.shift();
+  if(Object.hasOwn(p,'model')&&p.model)state.model=p.model;
+  $('temp').textContent=p.valid?fmt(p.temp_c,2)+' °C':'INVALID';
+  $('temp').className='v '+(p.valid?'cyan':'red');
+  $('recordCount').textContent=state.rows.length+' observation rows';
+  $('runId').textContent='Pico run '+state.runId;
+  $('qdetail').textContent=`Last: ${p.quality||'—'} · marker: ${p.clock_source}`;
+  if(state.demo){$('quality').textContent=state.shown.filter(x=>x.valid).length+' / 0';}
+  updateModelCards();refreshTable();redraw();
+  if(state.streamOpen)enqueueCsv(row);
+}
+function updateModelCards(){
+  const m=state.model;
+  $('k').textContent=m?fmt(m.k_per_s,6):'—';
+  $('tau').textContent=m?fmt(m.tau_s,1)+' s':'—';
+  $('fitQuality').textContent=m?'RMS '+fmt(m.rms_c,3)+' °C · '+m.points+' valid fit points':'Waiting for ≥6 valid samples';
+}
+function refreshTable(){
+  const recent=state.shown.slice(-18).reverse();
+  $('sampleRows').innerHTML=recent.map(p=>`<tr><td>${Number(p.run_id)}</td><td>${Number(p.seq)}</td><td>${fmt(p.t_ms/1000,1)}</td><td>${fmt(p.temp_c,3)}</td><td>${fmt(p.model_temp_c,3)}</td><td>${fmt(p.residual_c,3)}</td><td style="color:${p.valid?'#8cebba':'#ff8488'}">${p.valid?'Yes':'No'}</td><td>${p.clock_source||'—'}</td></tr>`).join('');
+}
+/* Graphics do no curve fitting. A Pico-supplied model can be evaluated at
+   each x position for rendering just as a CRT plots supplied coordinates. */
+function modelAt(ms){const m=state.model;return m?m.ambient_c+(m.t0_c-m.ambient_c)*Math.exp(-m.k_per_s*ms/1000):null;}
+function graph(canvas,kind){
+  const box=canvas.getBoundingClientRect();if(box.width<30||box.height<30)return;
+  const dpr=window.devicePixelRatio||1;canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);
+  const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
+  const w=box.width,h=box.height,L=65,R=18,T=17,B=35,ww=w-L-R,hh=h-T-B;
+  const points=state.shown.filter(p=>Number.isFinite(p.t_ms));
+  const maxT=Math.max(60,...points.map(p=>p.t_ms/1000));
+  const minT=0; // Absolute experiment timeline; useful for Newton cooling.
+  const samples=points.filter(p=>p.valid&&typeof p.temp_c==='number');
+  const m=state.model;let low,high;
+  if(kind==='temp'){
+    const ys=samples.map(p=>p.temp_c);
+    if(m){ys.push(m.ambient_c);ys.push(modelAt(maxT*1000));}
+    low=ys.length?Math.min(...ys):20;high=ys.length?Math.max(...ys):80;
+    const margin=Math.max((high-low)*.1,1);low-=margin;high+=margin;
+  }else{
+    const ys=samples.map(p=>m?p.temp_c-modelAt(p.t_ms):null).filter(Number.isFinite);
+    const peak=ys.length?Math.max(.15,...ys.map(Math.abs)):.5;low=-1.15*peak;high=1.15*peak;
+  }
+  const X=t=>L+(t-minT)/(maxT-minT)*ww;
+  const Y=v=>T+(high-v)/(high-low)*hh;
+  ctx.clearRect(0,0,w,h);ctx.font='11px Segoe UI,Arial,sans-serif';
+  ctx.strokeStyle='#2a4153';ctx.fillStyle='#9cb6c8';ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    const y=T+i*hh/5;ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();
+    const value=high-i*(high-low)/5;ctx.textAlign='right';ctx.fillText(value.toFixed(kind==='temp'?1:2),L-9,y+4);
+  }
+  for(let i=0;i<=6;i++){
+    const t=maxT*i/6;const x=X(t);ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,h-B);ctx.stroke();
+    ctx.textAlign='center';ctx.fillText(t.toFixed(0),x,h-B+17);
+  }
+  ctx.textAlign='center';ctx.fillText('Elapsed experiment time (seconds)',L+ww/2,h-2);
+  // Event markers are provided by the Pico as timestamped lab operations.
+  for(const e of state.events.filter(e=>e.run_id===state.runId)){
+    const x=X(e.t_ms/1000);if(x<L||x>w-R)continue;
+    ctx.setLineDash([4,4]);ctx.strokeStyle='#d4a7ed';ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,h-B);ctx.stroke();ctx.setLineDash([]);
+    if(kind==='temp'){ctx.fillStyle='#d4a7ed';ctx.textAlign='left';ctx.fillText(String(e.label).slice(0,18),Math.min(x+4,w-100),T+10);}
+  }
+  function strokeSeries(xy,color,width=2){
+    if(!xy.length)return;ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=width;
+    xy.forEach(([x,y],i)=>i?ctx.lineTo(X(x),Y(y)):ctx.moveTo(X(x),Y(y)));
+    ctx.stroke();
+  }
+  if(kind==='temp'){
+    if(m){
+      strokeSeries([[0,m.ambient_c],[maxT,m.ambient_c]],'#87d9b0',1.5);
+      const curve=[];for(let i=0;i<=160;i++){const t=maxT*i/160;curve.push([t,modelAt(t*1000)]);}strokeSeries(curve,'#f7c775',2.4);
+    }
+    // A gap in readings remains a gap: never interpolate through invalid samples.
+    let chain=[];
+    for(const p of points){
+      if(!p.valid||p.temp_c===null){strokeSeries(chain,'#5ae7ee',2.1);chain=[];}
+      else chain.push([p.t_ms/1000,p.temp_c]);
+    }
+    strokeSeries(chain,'#5ae7ee',2.1);
+    if(samples.length){const p=samples[samples.length-1];ctx.fillStyle='#5ae7ee';ctx.beginPath();ctx.arc(X(p.t_ms/1000),Y(p.temp_c),4,0,7);ctx.fill();}
+  }else{
+    strokeSeries([[0,0],[maxT,0]],'#526d86',1.5);
+    if(m){strokeSeries(samples.map(p=>[p.t_ms/1000,p.temp_c-modelAt(p.t_ms)]),'#bb9dff',1.7);}
+  }
+}
+
+/* ----------------------------------------------------------------------
+   Precision graph (V1.2)
+
+   DESIGN CONTRACT
+   - RP2040 calculates model coefficients and scientific quality metrics.
+   - Chrome renders Pico results but DOES NOT fit an independent model.
+   - Actual elapsed time t_ms drives X; validated DS18B20 °C drives Y.
+   - No interpolation over invalid samples or missing sequence numbers.
+   - Window selection, scaling and hold affect VIEW ONLY. All observations
+     continue to reach state.rows and operator-authorized CSV recording.
+   - The crosshair inspects recorded observations; no fake interpolation.
+   ---------------------------------------------------------------------- */
+const scopeView={rangeSeconds:300,yMode:'auto',showFit:true,showEvents:true,
+  hold:false,holdAt:null,hover:null,geometry:null,visible:[],paintQueued:false};
+
+function scopeTime(t){
+  if(!Number.isFinite(t))return '—';
+  const seconds=Math.max(0,t);const min=Math.floor(seconds/60);
+  return min+':'+String(Math.floor(seconds%60)).padStart(2,'0');
+}
+function tickStep(span,goal){
+  const raw=Math.max(span/Math.max(goal,1),1e-8),p=Math.pow(10,Math.floor(Math.log10(raw)));
+  const q=raw/p;return (q<=1?1:q<=2?2:q<=2.5?2.5:q<=5?5:10)*p;
+}
+function signedText(x,decimals=2){return Number.isFinite(x)?(x>=0?'+':'')+x.toFixed(decimals):'—';}
+function activeRunPoints(){
+  // Only the run currently displayed should affect axes or trace.
+  return state.shown.filter(p=>p.run_id===state.runId&&Number.isFinite(Number(p.t_ms)))
+    .slice().sort((a,b)=>a.t_ms-b.t_ms);
+}
+function scopeBounds(points){
+  const latest=points.length?points[points.length-1].t_ms/1000:0;
+  const edge=scopeView.hold&&scopeView.holdAt!==null?scopeView.holdAt:latest;
+  let x0,x1;
+  if(scopeView.rangeSeconds===0){x0=0;x1=Math.max(60,edge);}
+  else{x1=Math.max(scopeView.rangeSeconds,edge);x0=Math.max(0,x1-scopeView.rangeSeconds);}
+  return {x0,x1,latest};
+}
+function ambientValue(){
+  return state.model&&Number.isFinite(Number(state.model.ambient_c))?Number(state.model.ambient_c):
+    (state.status&&Number.isFinite(Number(state.status.ambient_c))?Number(state.status.ambient_c):Number($('ambient').value));
+}
+function scopeYBounds(visible,kind,x0,x1){
+  if(kind==='temperature'&&scopeView.yMode==='fixed'){
+    const a=Number($('scopeYMin').value),b=Number($('scopeYMax').value);
+    if(Number.isFinite(a)&&Number.isFinite(b)&&a<b)return {y0:a,y1:b};
+  }
+  let ys=[];
+  if(kind==='temperature'){
+    if(!visible.some(p=>p.valid&&p.temp_c!==null&&Number.isFinite(Number(p.temp_c)))&&!state.model)return {y0:20,y1:80};
+    ys=visible.filter(p=>p.valid&&p.temp_c!==null&&Number.isFinite(Number(p.temp_c))).map(p=>Number(p.temp_c));
+    const ambient=ambientValue();
+    if(Number.isFinite(ambient))ys.push(ambient);
+    if(scopeView.showFit&&state.model){ys.push(modelAt(x0*1000),modelAt(x1*1000));}
+    ys=ys.filter(Number.isFinite);
+    if(!ys.length)return {y0:20,y1:80};
+    let lo=Math.min(...ys),hi=Math.max(...ys),span=hi-lo;
+    const pad=Math.max(0.25,span*.075);return {y0:lo-pad,y1:hi+pad};
+  }
+  if(state.model)ys=visible.filter(p=>p.valid&&p.temp_c!==null&&Number.isFinite(Number(p.temp_c)))
+    .map(p=>Number(p.temp_c)-modelAt(Number(p.t_ms)) ).filter(Number.isFinite);
+  const peak=ys.length?Math.max(.125,...ys.map(Math.abs)):.5;
+  return {y0:-peak*1.18,y1:peak*1.18};
+}
+function canvas2d(canvas){
+  const r=canvas.getBoundingClientRect();if(r.width<70||r.height<70)return null;
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  canvas.width=Math.ceil(r.width*dpr);canvas.height=Math.ceil(r.height*dpr);
+  const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,r.width,r.height);
+  return {ctx,w:r.width,h:r.height};
+}
+function scopePlot(canvas,kind){
+  const surface=canvas2d(canvas);if(!surface)return;
+  const {ctx,w,h}=surface;const main=kind==='temperature';
+  const left=main?73:73,right=20,top=main?21:11,bottom=main?46:34;
+  const plotW=Math.max(1,w-left-right),plotH=Math.max(1,h-top-bottom);
+  const points=activeRunPoints();const {x0,x1,latest}=scopeBounds(points);
+  const inView=points.filter(p=>p.t_ms/1000>=x0&&p.t_ms/1000<=x1);
+  const {y0,y1}=scopeYBounds(inView,kind,x0,x1);
+  const X=t=>left+(t-x0)/(x1-x0)*plotW;
+  const Y=v=>top+(y1-v)/(y1-y0)*plotH;
+  const rect={left,top,right:left+plotW,bottom:top+plotH};
+  if(main){scopeView.geometry={x0,x1,y0,y1,rect};scopeView.visible=inView;}
+  ctx.font='12px Segoe UI,Arial,sans-serif';ctx.lineWidth=1;
+  // The minor and major gridlines are derived from physically meaningful
+  // ranges, using 1/2/2.5/5/10 x 10^n divisions (no arbitrary index axis).
+  let yStep=tickStep(y1-y0,main?7:3);let n=0;
+  for(let v=Math.ceil(y0/yStep)*yStep;v<=y1+yStep*.001&&n<70;v+=yStep,n++){
+    const yy=Y(v);ctx.strokeStyle='#243c50';ctx.beginPath();ctx.moveTo(left,yy);ctx.lineTo(left+plotW,yy);ctx.stroke();
+    ctx.fillStyle='#a6bfce';ctx.textAlign='right';ctx.fillText(v.toFixed(yStep<.1?3:yStep<1?2:1),left-12,yy+4);
+  }
+  let xStep=tickStep(x1-x0,Math.max(3,Math.floor(plotW/115)));n=0;
+  for(let v=Math.ceil(x0/xStep)*xStep;v<=x1+xStep*.001&&n<70;v+=xStep,n++){
+    const xx=X(v);ctx.strokeStyle='#243c50';ctx.beginPath();ctx.moveTo(xx,top);ctx.lineTo(xx,top+plotH);ctx.stroke();
+    ctx.fillStyle='#b0c8d7';ctx.textAlign='center';ctx.fillText(scopeTime(v),xx,top+plotH+18);
+  }
+  ctx.save();ctx.translate(16,top+plotH/2);ctx.rotate(-Math.PI/2);
+  ctx.fillStyle='#a9c6d4';ctx.textAlign='center';ctx.fillText(main?'Temperature  /  °C':'Error  /  °C',0,0);ctx.restore();
+  if(main){ctx.fillStyle='#a6c0cd';ctx.textAlign='center';ctx.fillText('Elapsed experimental time  /  min:s',left+plotW/2,h-6);}
+  ctx.strokeStyle='#506a80';ctx.strokeRect(left,top,plotW,plotH);
+  ctx.save();ctx.beginPath();ctx.rect(left,top,plotW,plotH);ctx.clip();
+  const stroke=(coords,color,lineWidth,dash)=>{
+    if(coords.length<2)return;
+    ctx.beginPath();ctx.lineWidth=lineWidth;ctx.strokeStyle=color;ctx.setLineDash(dash||[]);
+    coords.forEach(([t,v],i)=>i?ctx.lineTo(X(t),Y(v)):ctx.moveTo(X(t),Y(v)));
+    ctx.stroke();ctx.setLineDash([]);
+  };
+  if(main){
+    const ambient=ambientValue();
+    if(Number.isFinite(ambient))stroke([[x0,ambient],[x1,ambient]],'#84dda9',1.5,[6,5]);
+    if(scopeView.showFit&&state.model){
+      const modelPts=[];for(let i=0;i<=Math.min(480,Math.max(120,plotW));i++){
+        const t=x0+(x1-x0)*i/Math.min(480,Math.max(120,plotW));modelPts.push([t,modelAt(t*1000)]);
+      }
+      stroke(modelPts,'#f7bd64',2.5);
+    }
+  }else{stroke([[x0,0],[x1,0]],'#7396ae',1.2,[5,5]);}
+  if(main&&scopeView.showEvents){
+    ctx.font='11px Segoe UI,Arial';
+    for(const e of state.events.filter(e=>e.run_id===state.runId&&Number.isFinite(Number(e.t_ms)))){
+      const t=Number(e.t_ms)/1000;if(t<x0||t>x1)continue;
+      const xx=X(t);ctx.strokeStyle='#bf9dfa';ctx.lineWidth=1;ctx.setLineDash([4,5]);
+      ctx.beginPath();ctx.moveTo(xx,top);ctx.lineTo(xx,top+plotH);ctx.stroke();ctx.setLineDash([]);
+      const label=String(e.label||'Event').slice(0,22);
+      ctx.fillStyle='#d1b7ff';ctx.textAlign='left';ctx.fillText(label,Math.min(xx+5,left+plotW-ctx.measureText(label).width-3),top+18);
+    }
+  }
+  let chain=[],lastSequence=null;
+  const color=main?'#62ebed':'#b69cff';
+  for(const p of inView){
+    const seq=Number(p.seq),t=Number(p.t_ms)/1000;
+    const value=main?Number(p.temp_c):(state.model?Number(p.temp_c)-modelAt(Number(p.t_ms)):NaN);
+    const okay=p.valid&&p.temp_c!==null&&Number.isFinite(value);
+    const gap=lastSequence!==null&&Number.isFinite(seq)&&seq!==lastSequence+1;
+    if(!okay||gap){stroke(chain,color,2.15);chain=[];}
+    if(okay)chain.push([t,value]);
+    if(Number.isFinite(seq))lastSequence=seq;
+    if(main&&!p.valid){
+      ctx.strokeStyle='#ff878a';ctx.lineWidth=2;
+      const xx=X(t),yy=top+plotH-10;ctx.beginPath();ctx.moveTo(xx-4,yy-4);ctx.lineTo(xx+4,yy+4);ctx.moveTo(xx+4,yy-4);ctx.lineTo(xx-4,yy+4);ctx.stroke();
+    }
+  }
+  stroke(chain,color,2.15);
+  // Draw endpoints. The actual valid values are never smoothed or changed.
+  const valid=inView.filter(p=>p.valid&&p.temp_c!==null&&Number.isFinite(Number(p.temp_c)));
+  if(valid.length){const last=valid[valid.length-1];const yy=main?Number(last.temp_c):(state.model?Number(last.temp_c)-modelAt(Number(last.t_ms)):null);
+    if(yy!==null&&Number.isFinite(yy)){ctx.fillStyle=color;ctx.beginPath();ctx.arc(X(last.t_ms/1000),Y(yy),4,0,Math.PI*2);ctx.fill();}
+  }
+  // A cursor uses a measured point; never imply synthetic resolution.
+  if(main&&scopeView.hover&&scopeView.hover.point&&scopeView.hover.point.t_ms/1000>=x0&&scopeView.hover.point.t_ms/1000<=x1){
+    const p=scopeView.hover.point,t=Number(p.t_ms)/1000,xx=X(t);
+    ctx.strokeStyle='#d9e9ef';ctx.lineWidth=1;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(xx,top);ctx.lineTo(xx,top+plotH);ctx.stroke();ctx.setLineDash([]);
+    if(p.valid&&Number.isFinite(Number(p.temp_c))){const yy=Y(Number(p.temp_c));ctx.fillStyle='#0d2530';ctx.strokeStyle='#eafaff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(xx,yy,5.5,0,2*Math.PI);ctx.fill();ctx.stroke();}
+  }
+  ctx.restore();
+  if(main){
+    $('scopeAxisInfo').textContent=`X: ${scopeTime(x0)} — ${scopeTime(x1)} elapsed · Y: ${y0.toFixed(2)} — ${y1.toFixed(2)} °C · divisions: ${yStep.toPrecision(3)} °C`;
+    $('scopeLiveLabel').textContent=scopeView.hold?'· VIEW HELD · recording continues':state.demo?'· SYNTHETIC DEMO':state.connected?'· LIVE USB': '· OFFLINE';
+    $('scopeSession').textContent=`Run ${state.runId} · ${inView.length} in view / ${points.length} buffered`;
+  }
+}
+function scopeRefreshCards(){
+  const points=activeRunPoints();const last=points.length?points[points.length-1]:null;
+  const good=points.filter(p=>p.valid&&p.temp_c!==null&&Number.isFinite(Number(p.temp_c)));
+  const latest=good.length?good[good.length-1]:null;
+  const bad=points.length-good.length;const model=state.model;
+  $('scopeTemp').textContent=latest?fmt(latest.temp_c,3):'—';
+  $('scopeQuality').textContent=latest?`Last valid seq ${latest.seq} · ${latest.quality||'verified'} · ${latest.clock_source||'unknown'} clock`:'No verified readings yet';
+  $('scopeElapsed').textContent=last?scopeTime(last.t_ms/1000):'—';
+  $('scopeAmbient').textContent=fmt(ambientValue(),2)+' °C';
+  $('scopeK').textContent=model?fmt(model.k_per_s,6)+' s⁻¹':'—';
+  $('scopeTau').textContent=model?fmt(model.tau_s,1)+' s':'—';
+  $('scopeRms').textContent=model?fmt(model.rms_c,3)+' °C':'—';
+  $('scopeCounts').textContent=`${good.length} / ${bad}`;
+  $('scopeGaps').textContent=state.status&&state.status.missing!==undefined?state.status.missing:'—';
+  $('scopeJitter').textContent=state.status&&state.status.interval_sd_ms!==undefined?fmt(state.status.interval_sd_ms,1)+' ms':'—';
+  $('scopeSource').textContent=sourceLabel();
+  $('scopeRecording').textContent=state.streamOpen?'● CSV FILE RECORDING':`${state.rows.length} observations in browser · export before closing`;
+  $('scopeResidualLabel').textContent=model?'RP2040 fit · RMS '+fmt(model.rms_c,3)+' °C':'Waiting for Pico to establish a model';
+}
+function scopeRender(){
+  scopeView.paintQueued=false;
+  if(!$('page-scope').classList.contains('active'))return;
+  scopeRefreshCards();scopePlot($('scopeChart'),'temperature');scopePlot($('scopeResidual'),'residual');
+}
+function queueScopeRender(){
+  if(scopeView.paintQueued)return;
+  scopeView.paintQueued=true;requestAnimationFrame(scopeRender);
+}
+function scopePointNear(clientX){
+  const canvas=$('scopeChart');const box=canvas.getBoundingClientRect(),g=scopeView.geometry;
+  if(!g||!scopeView.visible.length)return null;
+  const pixel=clientX-box.left;
+  if(pixel<g.rect.left||pixel>g.rect.right)return null;
+  const time=g.x0+(pixel-g.rect.left)/(g.rect.right-g.rect.left)*(g.x1-g.x0);
+  let nearest=null,best=Infinity;
+  for(const p of scopeView.visible){const diff=Math.abs(p.t_ms/1000-time);if(diff<best){nearest=p;best=diff;}}
+  return nearest;
+}
+function scopeTooltipFor(p,clientX,clientY){
+  const tooltip=$('scopeTooltip'),wrap=$('scopeChartWrap');
+  if(!p){tooltip.hidden=true;return;}
+  const residual=state.model&&p.valid?Number(p.temp_c)-modelAt(p.t_ms):null;
+  const rows=[`t = ${scopeTime(p.t_ms/1000)}  ·  #${p.seq}`,
+    p.valid?`Measured: ${fmt(p.temp_c,3)} °C`:'INVALID SAMPLE',
+    `Pico model: ${p.valid&&state.model?fmt(modelAt(p.t_ms),3)+' °C':'—'}`,
+    `Residual: ${residual!==null? signedText(residual,3)+' °C':'—'}`,
+    `Quality: ${p.quality||'—'}`,
+    `Clock: ${p.clock_source||'—'}`];
+  tooltip.replaceChildren(...rows.map((txt,i)=>{const e=document.createElement('div');e.textContent=txt;if(i===0)e.className='tmeta';return e;}));
+  tooltip.hidden=false;
+  const rect=wrap.getBoundingClientRect();
+  const tooltipWidth=tooltip.offsetWidth||195,tooltipHeight=tooltip.offsetHeight||124;
+  tooltip.style.left=Math.max(4,Math.min(rect.width-tooltipWidth-4,clientX-rect.left+14))+'px';
+  tooltip.style.top=Math.max(4,Math.min(rect.height-tooltipHeight-4,clientY-rect.top-20))+'px';
+}
+$('scopeChart').addEventListener('pointermove',e=>{
+  if(!$('page-scope').classList.contains('active'))return;
+  const p=scopePointNear(e.clientX);scopeView.hover=p?{point:p}:null;
+  scopeTooltipFor(p,e.clientX,e.clientY);queueScopeRender();
+});
+$('scopeChart').addEventListener('pointerleave',()=>{scopeView.hover=null;$('scopeTooltip').hidden=true;queueScopeRender();});
+$('scopeWindow').onchange=()=>{scopeView.rangeSeconds=$('scopeWindow').value==='all'?0:Number($('scopeWindow').value);scopeView.hold=false;scopeView.holdAt=null;$('scopeFreeze').textContent='Hold view';queueScopeRender();};
+$('scopeYMode').onchange=()=>{scopeView.yMode=$('scopeYMode').value;const isManual=scopeView.yMode==='fixed';$('scopeYMin').disabled=!isManual;$('scopeYMax').disabled=!isManual;queueScopeRender();};
+for(const name of ['scopeYMin','scopeYMax']) $(name).addEventListener('input',()=>{
+  const low=Number($('scopeYMin').value),high=Number($('scopeYMax').value);
+  const valid=Number.isFinite(low)&&Number.isFinite(high)&&low<high;
+  $('scopeYMin').style.borderColor=valid?'':'#ed868b';$('scopeYMax').style.borderColor=valid?'':'#ed868b';
+  if(valid)queueScopeRender();
+});
+$('scopeFit').onchange=()=>{scopeView.showFit=$('scopeFit').checked;queueScopeRender();};
+$('scopeEvents').onchange=()=>{scopeView.showEvents=$('scopeEvents').checked;queueScopeRender();};
+$('scopeFreeze').onclick=()=>{
+  scopeView.hold=!scopeView.hold;
+  scopeView.holdAt=scopeView.hold?scopeBounds(activeRunPoints()).latest:null;
+  $('scopeFreeze').textContent=scopeView.hold?'Resume follow':'Hold view';
+  queueScopeRender();
+};
+$('scopePng').onclick=()=>{
+  const canvas=$('scopeChart');if(canvas.width<5)return;
+  canvas.toBlob(blob=>{
+    if(!blob)return;
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download='lab12_precision_graph_run_'+state.runId+'.png';a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+  },'image/png');
+};
+
+function redraw(){graph($('tempChart'),'temp');graph($('residChart'),'resid');queueScopeRender();}
+window.addEventListener('resize',redraw);
+
+/* CSV escaping is mandatory because raw MSP evidence and notes are data.
+   Output is honest: model values are the ones the Pico supplied at the
+   observation's arrival, which may differ from a later refitted model. */
+function csvCell(v){const s=v===null||v===undefined?'':String(v);return '"'+s.replaceAll('"','""')+'"';}
+function csvLine(values){return values.map(csvCell).join(',')+'\r\n';}
+function rowValues(p){return [p.utc_received,p.run_id,p.seq,p.t_ms,p.temp_c,p.model_temp_c,p.residual_c,p.valid,p.quality,p.clock_source,p.delta_ms,p.missing,p.raw_x16,p.rom,p.scratch,p.raw];}
+function toCsv(rows,head){return csvLine(head)+rows.map(row=>csvLine(row)).join('');}
+function downloadFile(filename,content,type){
+  const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+const baseName=()=>`lab12_cooling_${new Date().toISOString().slice(0,19).replaceAll(':','-')}`;
+function exportData(){downloadFile(baseName()+'.csv',toCsv(state.rows.map(rowValues),CSV_COLS),'text/csv;charset=utf-8');log('Exported CSV observations: '+state.rows.length);}
+function exportEvents(){downloadFile(baseName()+'_events.csv',toCsv(state.events.map(x=>[x.utc_received,x.run_id,x.t_ms,x.label]),['utc_received','run_id','t_ms','label']),'text/csv;charset=utf-8');}
+function metadata(){return {application:'LAB-12 Digital Cooling Laboratory',source:sourceLabel(),saved:new Date().toISOString(),notes:$('notes').value,ambient_input:$('ambient').value,rate_input:$('period').value,pico_status:state.status,final_model:state.model,rows:state.rows.length,events:state.events.length};}
+function exportMeta(){downloadFile(baseName()+'_metadata.json',JSON.stringify(metadata(),null,2),'application/json');}
+function enqueueCsv(p){
+  if(!state.file||!state.streamOpen)return;
+  state.fileQueue=state.fileQueue.then(()=>state.file.write(csvLine(rowValues(p)))).catch(e=>{
+    log('CSV write error: '+e.message);$('fileStatus').textContent='CSV recording ERROR';state.streamOpen=false;
+  });
+}
+async function toggleRecording(){
+  if(state.streamOpen){
+    state.streamOpen=false;await state.fileQueue;
+    try{await state.file.close();log('Closed recording file successfully.');}catch(e){log('CSV close error: '+e.message);}
+    state.file=null;$('recordBtn').textContent='Record to file';$('fileStatus').textContent='CSV closed';return;
+  }
+  if(!window.showSaveFilePicker){alert('Live file recording requires Chrome File System Access. Use Export CSV to download a snapshot.');return;}
+  try{
+    const handle=await showSaveFilePicker({suggestedName:baseName()+'.csv',types:[{description:'CSV observations',accept:{'text/csv':['.csv']}}]});
+    const file=await handle.createWritable();state.file=file;
+    await file.write(toCsv(state.rows.map(rowValues),CSV_COLS));
+    state.streamOpen=true;state.fileQueue=Promise.resolve();
+    $('recordBtn').textContent='Close recording';$('fileStatus').textContent='● Writing CSV to selected file';
+    log('Started user-authorized CSV recording, including existing observations.');
+  }catch(e){log('File recording not started: '+e.message);}
+}
+
+$('connectBtn').onclick=connectUSB;$('disconnectBtn').onclick=disconnectUSB;
+$('startBtn').onclick=()=>send('START');$('stopBtn').onclick=()=>send('STOP');$('statusBtn').onclick=()=>send('STATUS');
+$('historyBtn').onclick=()=>send('HISTORY');
+$('armBtn').onclick=()=>send('TRIGGER='+$('threshold').value);
+$('disarmBtn').onclick=()=>send('TRIGGER=OFF');$('clearBtn').onclick=()=>{
+  if(confirm('Start a new Pico experiment? Browser CSV history will be retained.'))send('CLEAR');
+};
+$('applyBtn').onclick=()=>{
+  send('AMBIENT='+Number($('ambient').value).toFixed(2));send('RATE='+$('period').value);
+};
+$('fitBtn').onclick=()=>send('FIT='+(state.fit?'0':'1'));
+$('markBtn').onclick=()=>{if($('eventLabel').value.trim())send('MARK='+$('eventLabel').value.trim());$('eventLabel').value='';};
+$('saveCsvBtn').onclick=exportData;$('dataCsvBtn').onclick=exportData;$('eventCsvBtn').onclick=exportEvents;
+$('metaBtn').onclick=exportMeta;$('recordBtn').onclick=toggleRecording;
+// Local notes are best-effort: restricted/private contexts can deny storage.
+try{$('notes').value=localStorage.getItem('lab12_run_notes')||'';}catch(e){$('notes').value='';}
+$('notes').oninput=()=>{try{localStorage.setItem('lab12_run_notes',$('notes').value);}catch(e){/* Use metadata export instead. */}};
+
+/* ------------------------------------------------------------------------
+ Demo device: generates a synthetic, visibly marked laboratory record.
+ This runs only when the user requests it; real firmware carries the model.
+ ------------------------------------------------------------------------ */
+function startDemo(){
+  if(state.connected){alert('Disconnect the physical Pico before using demo.');return;}
+  stopDemo();state.demo=true;state.shown=[];state.seen=new Set();state.model=null;
+  state.runId=999;const ta=23.0,t0=73.5,k=0.0026;let counter=0;
+  state.demoTimer=setInterval(()=>{
+    counter++;
+    const t=counter*5000;
+    const trueTemp=ta+(t0-ta)*Math.exp(-k*t/1000);
+    const measured=Math.round((trueTemp+(Math.random()-.5)*.12)*16)/16;
+    const demoModel=counter>=6?{ambient_c:ta,t0_c:t0,k_per_s:k,tau_s:1/k,rms_c:.05,points:counter,method:'synthetic known values (demo only)'}:null;
+    receive({type:'sample',run_id:999,seq:counter,t_ms:t,delta_ms:5000,temp_c:measured,
+      model_temp_c:demoModel?ta+(t0-ta)*Math.exp(-k*t/1000):null,
+      residual_c:demoModel?measured-trueTemp:null,valid:true,quality:'DEMO_ONLY',
+      clock_source:'synthetic',marker_count:counter,rom:'SIMULATED',scratch:'SIMULATED',
+      raw:'SYNTHETIC DEMO ONLY',model:demoModel});
+  },900);
+  updateMode();log('SYNTHETIC DEMO RUN; not real acquisition.');
+  document.querySelector('[data-tab="scope"]').click();
+}
+function stopDemo(){if(state.demoTimer)clearInterval(state.demoTimer);state.demoTimer=null;state.demo=false;updateMode();}
+$('demoBtn').onclick=startDemo;$('demoStopBtn').onclick=stopDemo;
+updateMode();redraw();log('LAB-12 operator console loaded. No hardware connected.');
+</script>
+</body>
+</html>
