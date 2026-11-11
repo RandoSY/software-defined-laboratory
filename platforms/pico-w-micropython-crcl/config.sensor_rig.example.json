@@ -1,0 +1,45 @@
+{
+  "node_name": "pico-sdl-sensor-01",
+  "profile": "sensor-rig",
+  "wifi": {
+    "ssid": "YOUR_WIFI_SSID",
+    "password": "YOUR_WIFI_PASSWORD",
+    "connect_timeout_s": 20,
+    "hostname": "pico-sdl-sensor-01"
+  },
+  "tcp": {
+    "enabled": true,
+    "port": 8765,
+    "max_clients": 3,
+    "auth_token": ""
+  },
+  "console": {
+    "enabled": true,
+    "prompt": "SDL> ",
+    "echo": false
+  },
+  "ble": {
+    "enabled": false,
+    "name": "Pico-SDL"
+  },
+  "pins": {
+    "i2c_id": 0,
+    "i2c_sda": 4,
+    "i2c_scl": 5,
+    "i2c_freq": 400000,
+    "hcsr04_trig": 14,
+    "hcsr04_echo": 15,
+    "ds18b20_dq": 16,
+    "hx711_dout": 17,
+    "hx711_sck": 18
+  },
+  "devices": {
+    "enable_picobricks": false,
+    "enable_internal_temp": true,
+    "enable_i2c_bus": true,
+    "enable_mpu6050_autodetect": true,
+    "enable_hcsr04": true,
+    "enable_ds18b20": true,
+    "enable_hx711": true
+  }
+}

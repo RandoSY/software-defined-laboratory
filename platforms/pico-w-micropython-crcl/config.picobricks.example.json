@@ -1,0 +1,34 @@
+{
+  "node_name": "pico-sdl-bricks-01",
+  "profile": "picobricks",
+  "wifi": {
+    "ssid": "YOUR_WIFI_SSID",
+    "password": "YOUR_WIFI_PASSWORD",
+    "connect_timeout_s": 20,
+    "hostname": "pico-sdl-bricks-01"
+  },
+  "tcp": {
+    "enabled": true,
+    "port": 8765,
+    "max_clients": 3,
+    "auth_token": ""
+  },
+  "console": {
+    "enabled": true,
+    "prompt": "SDL> ",
+    "echo": false
+  },
+  "ble": {
+    "enabled": false,
+    "name": "Pico-SDL"
+  },
+  "devices": {
+    "enable_picobricks": true,
+    "enable_internal_temp": true,
+    "enable_i2c_bus": true,
+    "enable_mpu6050_autodetect": true,
+    "enable_hcsr04": false,
+    "enable_ds18b20": false,
+    "enable_hx711": false
+  }
+}

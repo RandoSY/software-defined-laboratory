@@ -1,0 +1,12 @@
+{
+  "apiVersion": "1.0.0",
+  "id": "demo_math",
+  "version": "1.0.0",
+  "provides": [
+    "demo_add",
+    "demo_scale"
+  ],
+  "requires": {
+    "sensors": []
+  }
+}

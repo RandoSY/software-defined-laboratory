@@ -1,0 +1,14 @@
+{
+  "apiVersion": "1.0.0",
+  "id": "newton_cooling",
+  "version": "1.0.0",
+  "provides": [
+    "cooling_start",
+    "cooling_sample",
+    "cooling_status",
+    "cooling_stop"
+  ],
+  "requires": {
+    "sensors": []
+  }
+}

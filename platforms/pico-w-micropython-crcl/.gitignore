@@ -1,0 +1,11 @@
+# Pico W SDL/CRCL local secrets and generated files
+config.json
+**/config.json
+*.pyc
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+*.log
+*.tmp
+.DS_Store
